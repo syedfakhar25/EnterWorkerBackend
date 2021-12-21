@@ -95,6 +95,9 @@ class StepController extends Controller
                    // dd($next_step[0]);
                 }
             }
+            else{
+                $next_step = 'no next step exists';
+            }
 
             return response()->json([
                 $next_step,
