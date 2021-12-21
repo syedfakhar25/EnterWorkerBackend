@@ -75,7 +75,7 @@ class TaskController extends Controller
             $task->title=$request->title;
             $task->task_status=$request->task_status;
             $task->is_important=$request->is_important;
-            $task->active=$request->active;
+           // $task->active=$request->active;
             $task->deadline=$request->deadline;
             $task->save();
            // dd($task);
@@ -148,7 +148,7 @@ class TaskController extends Controller
             $task->title=$request->title;
             $task->task_status=$request->task_status;
             $task->is_important=$request->is_important;
-            $task->active=$request->active;
+            //$task->active=$request->active;
             $task->deadline=$request->deadline;
             $task->save();
             $calenderevent=Calenderevent::where('task_id',$task->id)->first();

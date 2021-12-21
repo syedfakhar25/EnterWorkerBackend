@@ -17,6 +17,7 @@ class CreateStepsTable extends Migration
             $table->id();
             $table->bigInteger('project_id');
             $table->boolean('task_status')->default(0);
+            $table->boolean('active')->default(0);
             $table->bigInteger('step_order')->nullable();
             $table->timestamps();
         });

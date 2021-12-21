@@ -28,6 +28,7 @@ class StepController extends Controller
             return $this->responseFail();
         }
     }
+
     public function getSteps($pid)
     {
         try{
@@ -37,7 +38,6 @@ class StepController extends Controller
             foreach ($steps as $step){
 
                 $tasks = Task::where('step_id', $step->id)->get();
-               // dd($step->id);
 
                 $task_details= array();
                 foreach ($tasks as $task){
@@ -65,6 +65,45 @@ class StepController extends Controller
             return $this->responseFail();
         }
     }
+
+    //getting next step of project
+    public function stepAutomation(Request $request, $pid)
+    {
+        try{
+            $steps = Step::where('project_id', $pid)->get();
+            $user_step_order = $request->step_order;
+            $step_orders = array();
+            foreach($steps as $step){
+                $step_orders[] = $step->step_order;
+            }
+            $step_id = $request->step_id;
+
+            //getting next step order from current step
+            $current_step = Step::where('id',$step_id)->get();
+            $current_step_order = $current_step[0]->step_order;
+            $next_step_order = $current_step_order+1;
+            $next_step = Step::where('step_order', $next_step_order)->where('project_id', $pid)->get();
+            if(count($next_step)>0){
+                if($next_step[0]->active == 0 || $next_step[0]->active == NULL){
+                    $next_step[0]->active = 1;
+                    $next_step[0]->update();
+                  //  dd($next_step[0]);
+                }
+                elseif($next_step[0]->active == 1){
+                    $next_step[0]->active = 0;
+                    $next_step[0]->update();
+                   // dd($next_step[0]);
+                }
+            }
+
+            return response()->json([
+                $next_step,
+            ], 200);
+        }catch (\Exception $e)
+        {
+            return $this->responseFail();
+        }
+    }
     /**
      * Show the form for creating a new resource.
      *
@@ -86,6 +125,7 @@ class StepController extends Controller
             $step= new Step();
             $step->project_id=$request->project_id;
             $step->task_status=$request->task_status;
+            $step->active=$request->active;
             $step->step_order=$request->step_order;
             //dd($step);
             $step->save();
@@ -139,6 +179,7 @@ class StepController extends Controller
          //   dd($request->all());
             $step->project_id=$request->project_id;
             $step->task_status=$request->task_status;
+            $step->active=$request->active;
             $step->step_order=$request->step_order;
           // dd($step);
             $step->save();

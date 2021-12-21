@@ -54,6 +54,7 @@ Route::group(['prefix'=>'admin'],function(){
     Route::get('get-tasks/{id}',  [\App\Http\Controllers\API\TaskController::class,'getTasks']);
     Route::resource('steps', \App\Http\Controllers\API\StepController::class);
     Route::get('get-steps/{id}',  [\App\Http\Controllers\API\StepController::class,'getSteps']);
+    Route::put('/step-automation/{id}', [\App\Http\Controllers\API\StepController::class, 'stepAutomation']);
     Route::put('/add-manager/{id}', [ProjectController::class,'addProjectManager']);
 
     //routes related to adding project team in a Project
