@@ -21,11 +21,14 @@ class ProjectResource extends JsonResource
         'street' => $this->street,
         'postal_code' => $this->postal_code,
         'city' => $this->city,
+        'progress' =>$this->progress,
         'start_date' => $this->start_date,
         'end_date' => $this->end_date,
+        'pin_status' => $this->pin_status,
         'created_at' => (string) $this->created_at,
         'updated_at' => (string) $this->updated_at,
         'customer' => $this->customer,
+        'employee' => $this->employee,
         ];
     }
 }

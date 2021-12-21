@@ -16,8 +16,12 @@ class CreateProjectsTable extends Migration
         Schema::create('projects', function (Blueprint $table) {
             $table->id();
             $table->bigInteger('customer_id');
+            $table->bigInteger('manager_id')->nullable();
+            $table->boolean('active')->nullable();
             $table->string('name')->nullable();
             $table->text('description')->nullable();
+            $table->string('project_offer')->nullable();
+            $table->string('project_drawing')->nullable();
             $table->string('street')->nullable();
             $table->string('postal_code')->nullable();
             $table->string('city')->nullable();

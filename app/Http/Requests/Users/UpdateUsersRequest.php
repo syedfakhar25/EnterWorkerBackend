@@ -24,15 +24,7 @@ class UpdateUsersRequest extends FormRequest
     public function rules()
     {
         return [
-            'first_name' => ['required', 'string'],
-            'last_name' => ['required', 'string'],
-            'phone' => ['required', 'numeric'],
-            'designation' => ['required', 'string'],
-            'img' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'gender' => ['required', 'string'],
-            'user_type' => ['required', 'numeric'],
-            'email' =>'required|email|unique:users,email,'.$this->user->id,
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        //
         ];
     }
 }

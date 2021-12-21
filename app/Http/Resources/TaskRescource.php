@@ -17,7 +17,8 @@ class TaskRescource extends JsonResource
        return [
        'id' => $this->id,
         'title' => $this->title,
-        'percentage' => $this->percentage,
+        'percentage' => $this->percentage, 
+        'task_status' => $this->task_status,
         'deadline' => (string) $this->deadline,
         'created_at' => (string) $this->created_at,
         'updated_at' => (string) $this->updated_at,

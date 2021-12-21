@@ -3,15 +3,19 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\Designation;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 use Illuminate\Http\Request;
 use App\Http\Requests\Users\StoreUsersRequest;
 use App\Http\Requests\Users\UpdateUsersRequest;
 use App\Http\Traits\ApiMessagesTrait;
 use Illuminate\Support\Facades\Hash;
-use App\Http\Resources\UsersCollection; 
+use App\Http\Resources\UsersCollection;
 use File;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 class UsersController extends Controller
 {
     use ApiMessagesTrait;
@@ -33,6 +37,18 @@ class UsersController extends Controller
         }
     }
 
+    public function userEmployees(Request $request){
+        //dd('sjdb');
+        $employees = DB::select(DB::raw("select  users.*, designations.designation_name from users join designations
+                            on (users.designation_id = designations.id);"));
+        foreach ($employees as $emp){
+            $emp->img =  asset('user_images/' . $emp->img);
+        }
+
+        return response()->json([
+            $employees
+        ], 200);
+    }
     /**
      * Show the form for creating a new resource.
      *
@@ -49,21 +65,25 @@ class UsersController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(StoreUsersRequest $request)
+    public function store(Request $request)
     {
-        // dd($request->all());
-       
+     try{
+        // dd('here');
+        // dd($request->designation_id);
+         $designation_name  = Designation::select('designation_name')->where('id', $request->designation_id)->first();
+         $d_name = $designation_name->designation_name;
 
-     try{   
         $user= new User();
         $user->first_name=$request->first_name;
         $user->last_name=$request->last_name;
         $user->phone=$request->phone;
         $user->gender=$request->gender;
-        $user->designation=$request->designation;
+        $user->designation_id=$request->designation_id;
+        $user->designation=$d_name;
         $user->email=$request->email;
         $user->password= Hash::make($request->password);
         $user->user_type=$request->user_type;
+
         if (!empty($request->img)) {
                 $imageName = time() . '.' . $request->img->extension();
                 $request->img->move(public_path('user_images'), $imageName);
@@ -84,7 +104,8 @@ class UsersController extends Controller
             $user->assignRole($role);
         }
         $user->img=asset('user_images/' . $user->img);
-            return $this->responseSuccess($user);
+
+        return $this->responseSuccess($user);
         }catch (\Exception $e)
         {
             return $this->responseFail();
@@ -135,23 +156,41 @@ class UsersController extends Controller
      * @param  \App\Models\User  $user
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateUsersRequest $request,  User $user)
+    public function update(Request $request,  User $user)
     {
-            try{   
+        try{
+       // dd($request->password);
+        $designation_name  = Designation::select('designation_name')->where('id', $request->designation_id)->first();
+
+        // dd($request->designation_id);
+        $d_name = $designation_name->designation_name;
         $user->first_name=$request->first_name;
         $user->last_name=$request->last_name;
         $user->phone=$request->phone;
         $user->gender=$request->gender;
-        $user->designation=$request->designation;
-        $user->email=$request->email;
-        $user->password= Hash::make($request->password);
+        $user->designation_id=$request->designation_id;
+        $user->designation=$d_name;
+        if( $user->email != $request->email){
+            $user->email=$request->email;
+        }
+        if($request->password!=NULL){
+            $user->password= Hash::make($request->password);
+           // dd('id');
+        }
+
         $user->user_type=$request->user_type;
-        if (!empty($request->img)) {
-                $imageName = time() . '.' . $request->img->extension();
-                $request->img->move(public_path('user_images'), $imageName);
-                $user->img = $imageName;
-            }
+
+        if (!empty($request->img)){
+             $base64_image = $request->img; // your base64 encoded
+            @list($type, $file_data) = explode(';', $base64_image);
+            @list(, $file_data) = explode(',', $file_data);
+            $imageName = time().'.'.'png';
+            \File::put(public_path('user_images/').$imageName, base64_decode($file_data));
+                        $user->img = $imageName;
+        }
+      //  dd($user);
         $user->save();
+        //dd($user);
         $user->roles()->detach();
         if($user->user_type==2){
             $role= Role::where('name','manager')->first();
@@ -166,7 +205,9 @@ class UsersController extends Controller
             $user->assignRole($role);
         }
         $user->img=asset('user_images/' . $user->img);
-            return $this->responseSuccess($user);
+            return response()->json([
+                $user
+            ], 200);
         }catch (\Exception $e)
         {
             return $this->responseFail();

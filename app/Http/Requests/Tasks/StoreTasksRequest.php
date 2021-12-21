@@ -25,10 +25,16 @@ class StoreTasksRequest extends FormRequest
     {
          return [
             'project_id' => ['required', 'numeric'],
+            'task_status' => 'required|integer|between:0,1',
             'employee_id' => ['required', 'numeric'],
             'title' => ['required', 'string'],
-            'percentage' => ['required', 'numeric'],
             'deadline' => ['required', 'date'],
+            'color' => ['required'],
+            'allDay' => ['required', 'string'],
+            // 'draggable' => ['required', 'string'],
+            // 'resizable' => ['required'],
+            'start' => ['required', 'date'],
+            'end' => ['required', 'date'],
         ];
     }
 }

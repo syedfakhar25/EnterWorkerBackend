@@ -15,11 +15,15 @@ class CreateTasksTable extends Migration
     {
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
+            $table->bigInteger('step_id');
             $table->bigInteger('project_id');
             $table->bigInteger('employee_id');
             $table->string('title')->nullable();
-            $table->double('percentage');
-            $table->date('deadline')->nullable();;
+           // $table->double('percentage');
+            $table->date('deadline')->nullable();
+            $table->boolean('task_status')->default(0);
+            $table->boolean('is_important');
+            $table->boolean('active');
             $table->timestamps();
         });
     }

@@ -1,12 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ChatController;
 
-header("Cache-Control: no-cache, must-revalidate");
-header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
-header('Access-Control-Allow-Origin:  *');
-header('Access-Control-Allow-Methods:  POST, GET, OPTIONS, PUT, DELETE');
-header('Access-Control-Allow-Headers:  Content-Type, X-Auth-Token, Origin, Authorization');
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -25,3 +22,9 @@ Route::get('/', function () {
 Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
+Route::get('/users-list', [ChatController::class, 'usersList']);
+Route::get('/chats', [ChatController::class, 'index']);
+Route::post('/fetch-messages', [ChatController::class,'fetchAllMessages']);
+Route::post('/messages', [ChatController::class,'sendMessage']);
+

@@ -25,6 +25,7 @@ class StoreProjectRequest extends FormRequest
     {
         return [
             'customer_id' => ['required', 'numeric'],
+           // 'manager_id' => ['numeric'],
             'name' => ['required', 'string'],
             'description' => ['required', 'string'],
             'street' => ['required', 'string'],
