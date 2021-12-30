@@ -67,4 +67,8 @@ class User extends Authenticatable
     public function projectTeam(){
         return $this->belongsTo(ProjectTeam::class,'employee_id');
     }
+    //employees of project team (members to assign in a project team)
+    public function companyTeam(){
+        return $this->belongsTo(CompanyTeam::class,'employee_id');
+    }
 }

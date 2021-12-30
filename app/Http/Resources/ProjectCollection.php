@@ -14,6 +14,6 @@ class ProjectCollection extends ResourceCollection
      */
     public function toArray($request)
     {
-        return $this->collection;
+        return $request->collection;
     }
 }

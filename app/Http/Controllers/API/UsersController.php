@@ -76,6 +76,7 @@ class UsersController extends Controller
         $user= new User();
         $user->first_name=$request->first_name;
         $user->last_name=$request->last_name;
+        $user->by_company=$request->by_company;
         $user->phone=$request->phone;
         $user->gender=$request->gender;
         $user->designation_id=$request->designation_id;
@@ -103,6 +104,10 @@ class UsersController extends Controller
             $role= Role::where('name','customer')->first();
             $user->assignRole($role);
         }
+        if($user->user_type==5){
+             $role= Role::where('name','company_worker')->first();
+             $user->assignRole($role);
+         }
         $user->img=asset('user_images/' . $user->img);
 
         return $this->responseSuccess($user);
@@ -166,6 +171,7 @@ class UsersController extends Controller
         $d_name = $designation_name->designation_name;
         $user->first_name=$request->first_name;
         $user->last_name=$request->last_name;
+        $user->by_company=$request->by_company;
         $user->phone=$request->phone;
         $user->gender=$request->gender;
         $user->designation_id=$request->designation_id;
@@ -202,6 +208,10 @@ class UsersController extends Controller
         }
         if($user->user_type==4){
             $role= Role::where('name','customer')->first();
+            $user->assignRole($role);
+        }
+        if($user->user_type==5){
+            $role= Role::where('name','company_worker')->first();
             $user->assignRole($role);
         }
         $user->img=asset('user_images/' . $user->img);
@@ -270,6 +280,31 @@ class UsersController extends Controller
             return $this->responseSuccess($managers);
         }catch (\Exception $e)
         {
+            return $this->responseFail();
+        }
+    }
+
+    public function getallCompanyWorkers()
+    {
+        try {
+            $company_workers = new UsersCollection(User::where('user_type', 5)->get());
+
+            return $this->responseSuccess($company_workers);
+        } catch (\Exception $e) {
+            return $this->responseFail();
+        }
+    }
+
+    public function getCompanyWorkerEmployees($company_worker)
+    {
+        try {
+            $company_worker_employees = User::where('by_company', $company_worker)->get();
+            $img_path=asset('user_images/');
+            foreach ($company_worker_employees as $key => $value) {
+                $value->img=$img_path.'/'.$value->img;
+            }
+            return $this->responseSuccess($company_worker_employees);
+        } catch (\Exception $e) {
             return $this->responseFail();
         }
     }

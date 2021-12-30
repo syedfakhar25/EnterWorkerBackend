@@ -17,6 +17,7 @@ class CreateProjectsTable extends Migration
             $table->id();
             $table->bigInteger('customer_id');
             $table->bigInteger('manager_id')->nullable();
+            $table->bigInteger('company_worker_id')->nullable();
             $table->boolean('active')->nullable();
             $table->string('name')->nullable();
             $table->text('description')->nullable();
@@ -27,6 +28,7 @@ class CreateProjectsTable extends Migration
             $table->string('city')->nullable();
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
+            $table->integer('status')->nullable();
             $table->timestamps();
         });
     }

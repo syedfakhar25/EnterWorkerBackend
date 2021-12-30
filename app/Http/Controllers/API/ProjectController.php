@@ -3,7 +3,12 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\CompanyTeam;
+use App\Models\ExtraWork;
+use App\Models\OrderDetail;
 use App\Models\Project;
+use App\Models\ProjectPicture;
+use App\Models\ProjectTeam;
 use App\Models\Step;
 use App\Models\User;
 use App\Models\Task;
@@ -16,6 +21,8 @@ use App\Http\Resources\ProjectCollection;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Response as FacadeResponse;
 use DB;
+use File;
+use function Symfony\Component\String\b;
 
 class ProjectController extends Controller
 {
@@ -30,6 +37,21 @@ class ProjectController extends Controller
       try
       {
         $projects=Project::with('customer','tasks','pinnedproject', 'manager')->get();
+          //checking status of projects (completed, in-progress) on basis of its tasks)
+        foreach($projects as $prj){
+              $tasks = Task::where('project_id', $prj->id)
+                  ->whereIn('task_status', [0,1])
+                  ->get();
+
+              if(count($tasks)>0){
+                  $prj->status = 1;
+                  $prj->update();
+              }
+              else{
+                  $prj->status = 2;
+                  $prj->update();
+              }
+        }
         $img_path=asset('user_images/');
         foreach ($projects as $key => $value) {
           /*$value->progress=$value->tasks()->where('task_status',1)->sum('percentage');*/
@@ -44,7 +66,7 @@ class ProjectController extends Controller
         }
 
 
-        $projects=new ProjectCollection($projects);
+       // $projects=new ProjectCollection($projects);
        // dd($projects);
           return response()->json([
               $projects
@@ -105,12 +127,14 @@ class ProjectController extends Controller
       {
 
         $img_path=asset('user_images/');
-        $project=Project::with('customer','manager', 'tasks')->where('id',$project)->first();
+        $project=Project::with('customer','manager', 'tasks', 'company_worker')->where('id',$project)->first();
 
         if( !empty($project->customer))
         $project->customer->img=$img_path.'/'.$project->customer->img;
         if( !empty($project->manager))
         $project->manager->img=$img_path.'/'.$project->manager->img;
+        if( !empty($project->company_worker))
+        $project->company_worker->img=$img_path.'/'.$project->company_worker->img;
       //  $project->progress=$project->tasks()->where('task_status',1)->sum('percentage');
 
         $employee=[];
@@ -209,6 +233,21 @@ class ProjectController extends Controller
         }
     }
 
+    //assign company worker to a project
+    public function addCompanyWorker(Request $request, $pid){
+        try{
+            $project  = Project::find($pid);
+            $project->company_worker_id = $request->company_worker_id;
+            $project->save();
+            return response()->json([
+                $project
+            ], 200);
+        }catch (\Exception $e)
+        {
+            return $this->responseFail();
+        }
+    }
+
     //adding project documents
     public function uploadProjectOffer(Request $request, $project_id){
         try{
@@ -251,6 +290,29 @@ class ProjectController extends Controller
         }
     }
 
+    public function uploadProjectImages(Request $request){
+        try{
+
+            $project_image= new ProjectPicture();
+            $project_image->project_id = $request->project_id;
+            $project_image->employee_id = $request->employee_id;
+            if (!empty($request->image)) {
+                $imageName = time() . '.' . $request->image->extension();
+                $request->image->move(public_path('project_images'), $imageName);
+                $project_image->image = $imageName;
+            }
+            //dd($project_image);
+            $project_image->save();
+            $project_image->image=asset('project_images/' .  $project_image->image);
+            return response()->json([
+                $project_image
+            ], 200);
+        }catch (\Exception $e)
+        {
+            return $this->responseFail();
+        }
+    }
+
     //get project files
     public function getProjectOffer(Request $request, $id){
         $name = Project::find($id);
@@ -273,6 +335,110 @@ class ProjectController extends Controller
         ], 200);
     }
 
+    //get project images
+    public function getProjectImage(Request $request, $id){
+        $project_pictures = ProjectPicture::where('project_id', $id)->get();
+        foreach($project_pictures as $pj){
+            $pj->image  =asset('project_images/' .$pj->image);
+        }
+        return response()->json([
+            $project_pictures
+        ], 200);
+    }
+
+    //delete project image
+    public function deleteProjectImage(Request $request, $id){
+        try
+        {
+            $project_pictures = ProjectPicture::find($id);
+            $img_path = public_path('/project_images/').$project_pictures->image;
+            if (File::exists($img_path)) {
+                File::delete($img_path);
+            }
+            $project_pictures->delete();
+            $msg="deleted";
+            return response()->json([
+                $msg
+            ], 200);
+        }catch (\Exception $e)
+        {
+            return $this->responseFail();
+        }
+    }
+
+    //add project extra work
+    public function addExtraWork(Request $request){
+        try{
+            $extrawork= new ExtraWork();
+            $extrawork->project_id=$request->project_id;
+            $extrawork->employee_id=$request->employee_id;
+            $extrawork->date=$request->date;
+            $extrawork->hours=$request->hours;
+            $extrawork->task_details=$request->task_details;
+            $extrawork->created_by=$request->created_by;
+           // dd($extrawork);
+            $extrawork->save();
+
+            //return $this->responseSuccess($step);
+
+            return response()->json([
+                $extrawork
+            ], 200);
+        }catch (\Exception $e)
+        {
+            return $this->responseFail();
+        }
+    }
+
+    //get extra tasks
+    public function getExtraWork(Request $request, $pid){
+        try{
+            $extrawork= ExtraWork::where('project_id', $pid)->get();
+            return response()->json([
+                $extrawork
+            ], 200);
+        }catch (\Exception $e)
+        {
+            return $this->responseFail();
+        }
+    }
+
+    //add project order details
+    public function addOrderDetails(Request $request){
+        try{
+            //dd($request->all());
+            $order_details= new OrderDetail();
+            $order_details->order_detail=$request->order_detail;
+            $order_details->price=$request->price;
+            $order_details->created_by=$request->created_by;
+            $order_details->project_id=$request->project_id;
+            $order_details->employee_id=$request->employee_id;
+            // dd($extrawork);
+            $order_details->save();
+
+            //return $this->responseSuccess($step);
+
+            return response()->json([
+                $order_details
+            ], 200);
+        }catch (\Exception $e)
+        {
+            return $this->responseFail();
+        }
+    }
+
+    //get orderDetails
+    public function getOrderDetails(Request $request, $pid){
+        try{
+            $order_details= OrderDetail::where('project_id', $pid)->get();
+            return response()->json([
+                $order_details
+            ], 200);
+        }catch (\Exception $e)
+        {
+            return $this->responseFail();
+        }
+    }
     /**
      * Remove the specified resource from storage.
      *
@@ -381,16 +547,37 @@ class ProjectController extends Controller
       try
       {
         $user_pined_projects=Pinproject::where('user_id', $user_id)->get();
+
+
+
         $project_id=[];
 
         foreach ($user_pined_projects as $key => $value) {
           $project_id[]=$value->project_id;
         }
-        $pined_projects=Project::whereIn('id',$project_id)->get();
+        $pined_projects=Project::with('customer')->whereIn('id',$project_id)->get();
+        //checking status of projects (completed, in-progress) on basis of its tasks)
+        foreach($pined_projects as $prj){
+               $tasks = Task::where('project_id', $prj->id)
+                   ->whereIn('task_status', [0,1])
+                   ->get();
 
-        /*foreach ($pined_projects as $key => $value) {
-          $value->progress=$value->tasks()->where('task_status',1)->sum('percentage');
-        }*/
+               if(count($tasks)>0){
+                   $prj->status = 1;
+                   $prj->update();
+               }
+               else{
+                   $prj->status = 2;
+                   $prj->update();
+               }
+        }
+          $img_path=asset('user_images/');
+          foreach ($pined_projects as $key => $prj) {
+              if(isset($prj->customer->img)){
+                  $prj->customer->img=$img_path.'/'.$prj->customer->img;
+              }
+          }
+
         return $this->responseSuccess($pined_projects);
       }catch (\Exception $e)
       {
@@ -403,8 +590,25 @@ class ProjectController extends Controller
         $projects=Project::with('customer','tasks','pinnedproject', 'manager')->get();
         $pin_status=0;
         $img_path=asset('user_images/');
-        $projects_with_manager = Project::where('manager_id',  '!=', NULL)->get();;
-       //dd($projects);
+        $projects_with_manager = Project::where('manager_id',  '!=', NULL)->get();
+
+        //checking status of projects (completed, in-progress) on basis of its tasks)
+        foreach($projects as $prj){
+            $tasks = Task::where('project_id', $prj->id)
+                    ->whereIn('task_status', [0,1])
+                    ->get();
+
+            if(count($tasks)>0){
+                $prj->status = 1;
+                $prj->update();
+            }
+            else{
+                $prj->status = 2;
+                $prj->update();
+            }
+        }
+
+
         foreach ($projects as $key => $value) {
            // $value->progress=$value->tasks()->where('task_status',1)->sum('percentage');
             $employee=[];
@@ -441,13 +645,75 @@ class ProjectController extends Controller
         return $this->responseFail();
       }
     }
-    public function employeeForProject($project_id){
+    public function adminOngoingProjects($admin_id){
+        try {
+            $get_projects=Project::all();
 
+            //checking status of projects (completed, in-progress) on basis of its tasks)
+            foreach($get_projects as $prj){
+                $tasks = Task::where('project_id', $prj->id)
+                    ->whereIn('task_status', [0,1])
+                    ->get();
+
+                if(count($tasks)>0){
+                    $prj->status = 1;
+                    $prj->update();
+                }
+                else{
+                    $prj->status = 2;
+                    $prj->update();
+                }
+            }
+            $project_ids=[];
+            foreach ($get_projects as $key => $value1) {
+                if($value1->status ==0 || $value1->status ==1 ){
+                    $project_ids[]=$value1->id;
+                }
+            }
+           // dd($get_projects);
+            $projects=Project::with('customer','tasks','pinnedproject')->whereIn('id',$project_ids)->get();
+            $img_path=asset('user_images/');
+            $pin_status=0;
+            foreach ($projects as $key => $value) {
+                /* $value->progress=$value->tasks()->where('task_status',1)->sum('percentage');*/
+                $employee=[];
+                foreach ($value->tasks as $key => $value1) {
+                    if(isset($value1->employee->img)){
+                        $value1->employee->img=$img_path.'/'.$value1->employee->img;
+                    }
+                    $employee[]=$value1->employee;
+                }
+                $manager_pined_project=Pinproject::where('user_id', $admin_id)->where('project_id',$value->id)->first();
+                if(isset($manager_pined_project->id)){
+                    $value->pin_status=1;
+                }else{
+                    $value->pin_status=0;
+                }
+                $value->employee=$employee;
+                $project_employee=collect($value->employee)->groupBy('id')->map(function ($item) {
+                    return array_merge(...$item->toArray());
+                });
+                $decode_employee=json_decode($project_employee);
+                $project_employees=[];
+                foreach ($decode_employee as $key => $value2) {
+                    $project_employees[]=$value2;
+                }
+                $value->employee=$project_employees;
+            }
+            // $projects=new ProjectCollection($projects);
+            return $this->responseSuccess($projects);
+
+        } catch (\Exception $e) {
+            return $this->responseFail();
+        }
+
+    }
+    public function employeeForProject($project_id){
       try
       {
-        $tasks=Task::where('project_id', $project_id)->get();
+        $team=ProjectTeam::where('project_id', $project_id)->get();
         $employee_ids=[];
-        foreach ($tasks as $key => $task) {
+        foreach ($team as $key => $task) {
           $employee_ids[]=$task->employee_id;
         }
         $employees=User::whereNotIn('id', $employee_ids)->where('user_type',3)->get();
@@ -460,6 +726,28 @@ class ProjectController extends Controller
       {
         return $this->responseFail();
       }
+    }
+    public function employeeForCompany(Request $request, $project_id){
+        try
+        {
+            $by_company = intval($_GET['by_company']);
+
+            $team=CompanyTeam::where('project_id', $project_id)->get();
+            $employee_ids=[];
+            foreach ($team as $key => $task) {
+                $employee_ids[]=$task->employee_id;
+            }
+
+            $employees=User::whereNotIn('id', $employee_ids)->where('user_type',3)->where('by_company', $by_company)->get();
+            $img_path=asset('user_images/');
+            foreach ($employees as $key => $value) {
+                $value->img=$img_path.'/'.$value->img;
+            }
+            return $this->responseSuccess($employees);
+        }catch (\Exception $e)
+        {
+            return $this->responseFail();
+        }
     }
     public function employeeProjectDetails($project_id){
       try {
@@ -490,6 +778,22 @@ class ProjectController extends Controller
               $end->img=asset('user_images/' . $end->img);
           }
           $manager_info = $manager_name_designations;*/
+          foreach($projects as $prj){
+              $tasks = Task::where('project_id', $prj->id)->get();
+              if(count($tasks)>0){
+                  foreach ($tasks as $tk){
+                      if($tk->task_status == 0 || $tk->task_status == 1){
+                          $prj->status = 1;
+                          $prj->update();
+                          break;
+                      }
+                      elseif($tk->task_status == 2){
+                          $prj->status = 2;
+                          $prj->update();
+                      }
+                  }
+              }
+          }
         $img_path=asset('user_images/');
         $pin_status=0;
         foreach ($projects as $key => $value) {
@@ -639,6 +943,22 @@ public function getManagerProjects($manager_id){
   {
     $projects=Project::with('customer','tasks','pinnedproject')->where('manager_id',$manager_id)->get();
     $pin_status=0;
+
+      //checking status of projects (completed, in-progress) on basis of its tasks)
+      foreach($projects as $prj){
+          $tasks = Task::where('project_id', $prj->id)
+              ->whereIn('task_status', [0,1])
+              ->get();
+
+          if(count($tasks)>0){
+              $prj->status = 1;
+              $prj->update();
+          }
+          else{
+              $prj->status = 2;
+              $prj->update();
+          }
+      }
     $img_path=asset('user_images/');
     foreach ($projects as $key => $value) {
         /*$value->progress=$value->tasks()->where('task_status',1)->sum('percentage');*/
@@ -667,7 +987,66 @@ public function getManagerProjects($manager_id){
             $value->employee=$project_employees;
      }
 
-    $projects=new ProjectCollection($projects);
+    //$projects=new ProjectCollection($projects);
+
+    return $this->responseSuccess($projects);
+  }catch (\Exception $e)
+  {
+    return $this->responseFail();
+  }
+
+}
+public function getCompanyWorkerProjects($company_worker_id){
+
+  try
+  {
+    $projects=Project::with('customer','tasks','pinnedproject')->where('company_worker_id',$company_worker_id)->get();
+    $pin_status=0;
+
+      //checking status of projects (completed, in-progress) on basis of its tasks)
+      foreach($projects as $prj){
+          $tasks = Task::where('project_id', $prj->id)
+              ->whereIn('task_status', [0,1])
+              ->get();
+
+          if(count($tasks)>0){
+              $prj->status = 1;
+              $prj->update();
+          }
+          else{
+              $prj->status = 2;
+              $prj->update();
+          }
+      }
+    $img_path=asset('user_images/');
+    foreach ($projects as $key => $value) {
+        /*$value->progress=$value->tasks()->where('task_status',1)->sum('percentage');*/
+        $employee=[];
+        foreach ($value->tasks as $key => $value1) {
+          if(isset($value1->employee->img)){
+            $value1->employee->img=$img_path.'/'.$value1->employee->img;
+          }
+          $employee[]=$value1->employee;
+        }
+        $company_worker_pined_project=Pinproject::where('user_id', $company_worker_id)->where('project_id',$value->id)->first();
+        if(isset($company_worker_pined_project->id)){
+          $value->pin_status=1;
+        }else{
+         $value->pin_status=0;
+       }
+       $value->employee=$employee;
+       $project_employee=collect($value->employee)->groupBy('id')->map(function ($item) {
+            return array_merge(...$item->toArray());
+            });
+            $decode_employee=json_decode($project_employee);
+            $project_employees=[];
+            foreach ($decode_employee as $key => $value2) {
+              $project_employees[]=$value2;
+            }
+            $value->employee=$project_employees;
+     }
+
+    //$projects=new ProjectCollection($projects);
 
     return $this->responseSuccess($projects);
   }catch (\Exception $e)
@@ -680,16 +1059,34 @@ public function getManagerProjects($manager_id){
  public function managerCompletedProjects($manager_id){
     try {
       $get_projects=Project::with('tasks')->where('manager_id',$manager_id)->get();
+
       foreach ($get_projects as $key => $value) {
         /*$value->progress=$value->tasks()->where('task_status',1)->sum('percentage');*/
       }
+        //checking status of projects (completed, in-progress) on basis of its tasks)
+        foreach($get_projects as $prj){
+            $tasks = Task::where('project_id', $prj->id)
+                ->whereIn('task_status', [0,1])
+                ->get();
+
+            if(count($tasks)>0){
+                $prj->status = 1;
+                $prj->update();
+            }
+            else{
+                $prj->status = 2;
+                $prj->update();
+            }
+        }
       $project_ids=[];
       foreach ($get_projects as $key => $value1) {
-        if($value1->progress==100){
+        if($value1->status==2){
           $project_ids[]=$value1->id;
         }
       }
+       // dd($project_ids);
       $projects=Project::with('customer','tasks','pinnedproject')->whereIn('id',$project_ids)->get();
+
       $img_path=asset('user_images/');
       $pin_status=0;
       foreach ($projects as $key => $value) {
@@ -718,7 +1115,8 @@ public function getManagerProjects($manager_id){
             }
             $value->employee=$project_employees;
      }
-     $projects=new ProjectCollection($projects);
+     //$projects=new ProjectCollection($projects);
+       // dd($projects);
      return $this->responseSuccess($projects);
 
    } catch (\Exception $e) {
@@ -727,52 +1125,68 @@ public function getManagerProjects($manager_id){
 
 }
 public function managerOngoingProjects($manager_id){
- try {
-  $get_projects=Project::with('tasks')->where('manager_id',$manager_id)->get();
-  /*foreach ($get_projects as $key => $value) {
-    $value->progress=$value->tasks()->where('task_status',1)->sum('percentage');
-  }*/
-  $project_ids=[];
-  foreach ($get_projects as $key => $value1) {
-    if($value1->progress<100){
-      $project_ids[]=$value1->id;
-    }
-  }
-  $projects=Project::with('customer','tasks','pinnedproject')->whereIn('id',$project_ids)->get();
-  $img_path=asset('user_images/');
-  $pin_status=0;
-  foreach ($projects as $key => $value) {
-   /* $value->progress=$value->tasks()->where('task_status',1)->sum('percentage');*/
-    $employee=[];
-    foreach ($value->tasks as $key => $value1) {
-      if(isset($value1->employee->img)){
-        $value1->employee->img=$img_path.'/'.$value1->employee->img;
+     try {
+      $get_projects=Project::with('tasks')->where('manager_id',$manager_id)->get();
+      /*foreach ($get_projects as $key => $value) {
+        $value->progress=$value->tasks()->where('task_status',1)->sum('percentage');
+      }*/
+
+         //checking status of projects (completed, in-progress) on basis of its tasks)
+         foreach($get_projects as $prj){
+             $tasks = Task::where('project_id', $prj->id)
+                 ->whereIn('task_status', [0,1])
+                 ->get();
+
+             if(count($tasks)>0){
+                 $prj->status = 1;
+                 $prj->update();
+             }
+             else{
+                 $prj->status = 2;
+                 $prj->update();
+             }
+         }
+      $project_ids=[];
+      foreach ($get_projects as $key => $value1) {
+        if($value1->status ==0 || $value1->status ==1 ){
+          $project_ids[]=$value1->id;
+        }
       }
-      $employee[]=$value1->employee;
+      $projects=Project::with('customer','tasks','pinnedproject')->whereIn('id',$project_ids)->get();
+      $img_path=asset('user_images/');
+      $pin_status=0;
+      foreach ($projects as $key => $value) {
+       /* $value->progress=$value->tasks()->where('task_status',1)->sum('percentage');*/
+        $employee=[];
+        foreach ($value->tasks as $key => $value1) {
+          if(isset($value1->employee->img)){
+            $value1->employee->img=$img_path.'/'.$value1->employee->img;
+          }
+          $employee[]=$value1->employee;
+        }
+        $manager_pined_project=Pinproject::where('user_id', $manager_id)->where('project_id',$value->id)->first();
+        if(isset($manager_pined_project->id)){
+          $value->pin_status=1;
+        }else{
+         $value->pin_status=0;
+       }
+       $value->employee=$employee;
+       $project_employee=collect($value->employee)->groupBy('id')->map(function ($item) {
+                return array_merge(...$item->toArray());
+                });
+                $decode_employee=json_decode($project_employee);
+                $project_employees=[];
+                foreach ($decode_employee as $key => $value2) {
+                  $project_employees[]=$value2;
+                }
+                $value->employee=$project_employees;
+     }
+        // $projects=new ProjectCollection($projects);
+     return $this->responseSuccess($projects);
+
+    } catch (\Exception $e) {
+      return $this->responseFail();
     }
-    $manager_pined_project=Pinproject::where('user_id', $manager_id)->where('project_id',$value->id)->first();
-    if(isset($manager_pined_project->id)){
-      $value->pin_status=1;
-    }else{
-     $value->pin_status=0;
-   }
-   $value->employee=$employee;
-   $project_employee=collect($value->employee)->groupBy('id')->map(function ($item) {
-            return array_merge(...$item->toArray());
-            });
-            $decode_employee=json_decode($project_employee);
-            $project_employees=[];
-            foreach ($decode_employee as $key => $value2) {
-              $project_employees[]=$value2;
-            }
-            $value->employee=$project_employees;
- }
- $projects=new ProjectCollection($projects);
- return $this->responseSuccess($projects);
 
-} catch (\Exception $e) {
-  return $this->responseFail();
-}
-
-}
+    }
 }

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateStepsTable extends Migration
+class CreateCompanyTeamsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,13 +13,10 @@ class CreateStepsTable extends Migration
      */
     public function up()
     {
-        Schema::create('steps', function (Blueprint $table) {
+        Schema::create('company_teams', function (Blueprint $table) {
             $table->id();
             $table->bigInteger('project_id');
-            $table->boolean('task_status')->default(0);
-            $table->boolean('active')->default(0);
-            $table->boolean('company_worker')->default(0);
-            $table->bigInteger('step_order')->nullable();
+            $table->bigInteger('employee_id');
             $table->timestamps();
         });
     }
@@ -31,6 +28,6 @@ class CreateStepsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('steps');
+        Schema::dropIfExists('company_teams');
     }
 }

@@ -19,6 +19,9 @@ class Project extends Model
     public function manager(){
         return $this->belongsTo(User::class,'manager_id');
     }
+    public function company_worker(){
+        return $this->belongsTo(User::class,'company_worker_id');
+    }
     public function steps(){
     	return $this->hasMany(Step::class,'project_id');
     }
@@ -32,5 +35,19 @@ class Project extends Model
     //team of project (members to assign in a project)
     public function projectTeam(){
         return $this->belongsTo(ProjectTeam::class,'project_id');
+    }
+
+    public function companyTeam(){
+        return $this->belongsTo(CompanyTeam::class,'project_id');
+    }
+
+    //project pictures
+    public function projectPictures(){
+        return $this->hasMany(ProjectPicture::class,'project_id');
+    }
+
+    //project extra work for employee
+    public function extraWork(){
+        return $this->hasMany(ExtraWork::class,'project_id');
     }
 }
