@@ -93,21 +93,23 @@ class ProjectController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(StoreProjectRequest $request)
+    public function store(Request $request)
     {
       try{
+
         $project= new Project();
         $project->customer_id=$request->customer_id;
         //$project->manager_id=$request->manager_id;
         $project->name=$request->name;
         $project->description=$request->description;
+        $project->manager_type=$request->manager_type;
         $project->street=$request->street;
         $project->postal_code=$request->postal_code;
         $project->city=$request->city;
         $project->start_date= $request->start_date;
         $project->end_date=$request->end_date;
         $project->save();
-
+        
         return $this->responseSuccess($project);
       }catch (\Exception $e)
       {
@@ -202,6 +204,7 @@ class ProjectController extends Controller
         //$project->manager_id=$request->manager_id;
         $project->name=$request->name;
         $project->description=$request->description;
+        $project->manager_type=$request->manager_type;
         $project->street=$request->street;
         $project->postal_code=$request->postal_code;
         $project->city=$request->city;
