@@ -18,6 +18,7 @@ class CreateUsersTable extends Migration
             $table->string('first_name')->nullable();
             $table->string('last_name')->nullable();
             $table->string('by_company')->nullable();
+            $table->bigInteger('manager_type')->nullable();
             $table->string('phone')->nullable();
             $table->string('email');
             $table->string('gender')->nullable();

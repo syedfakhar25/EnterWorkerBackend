@@ -77,6 +77,7 @@ class UsersController extends Controller
         $user->first_name=$request->first_name;
         $user->last_name=$request->last_name;
         $user->by_company=$request->by_company;
+        $user->manager_type=$request->manager_type;
         $user->phone=$request->phone;
         $user->gender=$request->gender;
         $user->designation_id=$request->designation_id;
@@ -172,6 +173,7 @@ class UsersController extends Controller
         $user->first_name=$request->first_name;
         $user->last_name=$request->last_name;
         $user->by_company=$request->by_company;
+        $user->manager_type=$request->manager_type;
         $user->phone=$request->phone;
         $user->gender=$request->gender;
         $user->designation_id=$request->designation_id;

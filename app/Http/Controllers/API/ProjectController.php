@@ -102,14 +102,13 @@ class ProjectController extends Controller
         //$project->manager_id=$request->manager_id;
         $project->name=$request->name;
         $project->description=$request->description;
-        $project->manager_type=$request->manager_type;
         $project->street=$request->street;
         $project->postal_code=$request->postal_code;
         $project->city=$request->city;
         $project->start_date= $request->start_date;
         $project->end_date=$request->end_date;
         $project->save();
-        
+
         return $this->responseSuccess($project);
       }catch (\Exception $e)
       {
@@ -204,7 +203,6 @@ class ProjectController extends Controller
         //$project->manager_id=$request->manager_id;
         $project->name=$request->name;
         $project->description=$request->description;
-        $project->manager_type=$request->manager_type;
         $project->street=$request->street;
         $project->postal_code=$request->postal_code;
         $project->city=$request->city;

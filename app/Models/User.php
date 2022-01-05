@@ -31,6 +31,7 @@ class User extends Authenticatable
         'designation',
         'img',
         'user_type',
+        'manager_type'
     ];
 
     /**

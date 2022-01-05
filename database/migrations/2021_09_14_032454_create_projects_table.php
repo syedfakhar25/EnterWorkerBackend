@@ -17,7 +17,6 @@ class CreateProjectsTable extends Migration
             $table->id();
             $table->bigInteger('customer_id');
             $table->bigInteger('manager_id')->nullable();
-            $table->string('manager_type')->nullable();
             $table->bigInteger('company_worker_id')->nullable();
             $table->boolean('active')->nullable();
             $table->string('name')->nullable();
