@@ -42,6 +42,7 @@ Route::group(['prefix'=>'auth'],function(){
 
 Route::group(['prefix'=>'admin'],function(){
     Route::resource('projects', ProjectController::class);
+    Route::resource('company', \App\Http\Controllers\API\CompanyController::class);
     Route::resource('users', UsersController::class);
     Route::get('dashboard/{id}', [DashboardController::class,'adminDashboard'])->name('admin.dashboard');
     Route::get('employees', [UsersController::class,'userEmployees']);
