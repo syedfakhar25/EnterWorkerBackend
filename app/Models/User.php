@@ -31,7 +31,10 @@ class User extends Authenticatable
         'designation',
         'img',
         'user_type',
-        'manager_type'
+        'manager_type',
+        'address',
+        'project_location',
+        'description'
     ];
 
     /**
@@ -57,6 +60,10 @@ class User extends Authenticatable
 
         return $this->hasMany(Chat::class);
 
+    }
+
+    public function project(){
+        return $this->hasMany(Project::class,'manager_id');
     }
 
     public function designation(){

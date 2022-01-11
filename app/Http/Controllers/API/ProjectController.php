@@ -7,6 +7,7 @@ use App\Models\CompanyTeam;
 use App\Models\ExtraWork;
 use App\Models\OrderDetail;
 use App\Models\Project;
+use App\Models\ProjectManager;
 use App\Models\ProjectPicture;
 use App\Models\ProjectTeam;
 use App\Models\Step;
@@ -220,13 +221,54 @@ class ProjectController extends Controller
     //assign project manager to a project
     public function addProjectManager(Request $request, $pid){
         //dd($request->all());
-
+            /*$manager_ids = Project::select('id', 'manager_id')->get();
+            //dd($manager_ids);
+            foreach ($manager_ids as $mm){
+                $project_manager = new ProjectManager();
+                $project_manager->project_id = $mm->id;
+                $project_manager->manager_id = $mm->manager_id;
+                $project_manager->save();
+            }*/
         try{
-            $project  = Project::find($pid);
+            $project_manager = new ProjectManager();
+            $project_manager->project_id = $pid;
+            $project_manager->manager_id = $request->manager_id;
+            $project_manager->save();
+            //dd($pid);
+            $project = Project::find($pid);
+            /*$project  = Project::find($pid);
             $project->manager_id = $request->manager_id;
-            $project->save();
+            $project->save();*/
             return response()->json([
-                $project
+                $project,
+                $project_manager
+            ], 200);
+        }catch (\Exception $e)
+        {
+            return $this->responseFail();
+        }
+    }
+
+    //get all managers of Projects
+    public function getProjectManagers(Request $request, $id){
+        try{
+            $project_managers = ProjectManager::select('manager_id')->where('project_id', $id)->get();
+
+            $managers= array();
+            foreach ($project_managers as $team){
+                $managers[]= $team->manager_id;
+            }
+            //dd($managers);
+            $managers_id[0] = implode(',', $managers);
+            $emp_name_designations = \Illuminate\Support\Facades\DB::select(DB::raw("select  users.id, users.first_name, users.last_name, users.img, designations.designation_name from users
+                      join designations on designations.id = users.designation_id where users.id IN ($managers_id[0])"));
+            foreach ($emp_name_designations as $end){
+                $end->img=asset('user_images/' . $end->img);
+            }
+            $project_managers = $emp_name_designations;
+            return response()->json([
+            $project_managers
+
             ], 200);
         }catch (\Exception $e)
         {
@@ -314,6 +356,70 @@ class ProjectController extends Controller
         }
     }
 
+    //get project offer for client
+    public function getProjectOfferClient(Request $request, $id){
+        $name = Project::where('customer_id', $id)->get();
+      //  dd($name);
+        $name = $name[0]->project_offer;
+        $project_offer  =asset('project_files/' .$name);
+        // dd($project_offer);
+        return response()->json([
+            $project_offer
+        ], 200);
+    }
+
+    public function OfferComment(Request $request, $id){
+        $project = Project::where('customer_id', $id)->get();
+        $project[0]->offer_comment = $request->offer_comment;
+        $project[0]->save();
+        return response()->json([
+            $project[0]
+        ], 200);
+    }
+
+    public function DrawingComment(Request $request, $id){
+        $project = Project::where('customer_id', $id)->get();
+        $project[0]->drawing_comment = $request->drawing_comment;
+        $project[0]->save();
+        return response()->json([
+            $project[0]
+        ], 200);
+    }
+
+    public function TimelineComment(Request $request, $id){
+        $project = Project::where('customer_id', $id)->get();
+        $project[0]->timline_comment = $request->timline_comment;
+        $project[0]->save();
+        return response()->json([
+            $project[0]
+        ], 200);
+    }
+
+    public function ProjectTimeline(Request $request, $id){
+        $project = Project::where('customer_id', $id)->get();
+        $start_date = $project[0]->start_date;
+        $end_date = $project[0]->end_date;
+        $timeline = [
+          'start_date' => $start_date,
+          'end_date' => $end_date
+        ];
+        return response()->json([
+            $timeline
+        ], 200);
+    }
+
+    //get project files
+    public function getProjectDrawingClient(Request $request, $id){
+        $name = Project::where('customer_id', $id)->get();
+        $name = $name[0]->project_drawing;
+        $project_drawing  =asset('project_files/' .$name);
+        //dd($project_drawing);
+        return response()->json([
+            $project_drawing
+        ], 200);
+    }
+
+
     //get project files
     public function getProjectOffer(Request $request, $id){
         $name = Project::find($id);
@@ -324,6 +430,7 @@ class ProjectController extends Controller
             $project_offer
         ], 200);
     }
+
 
     //get project files
     public function getProjectDrawing(Request $request, $id){
@@ -942,8 +1049,10 @@ public function getManagerProjects($manager_id){
 
   try
   {
-    $projects=Project::with('customer','tasks','pinnedproject')->where('manager_id',$manager_id)->get();
-    $pin_status=0;
+
+      $project_id = ProjectManager::select('project_id')->where('manager_id', $manager_id)->get();
+      $projects=Project::with('customer','tasks','pinnedproject')->where('id',$project_id)->get();
+      $pin_status=0;
 
       //checking status of projects (completed, in-progress) on basis of its tasks)
       foreach($projects as $prj){
@@ -1059,7 +1168,8 @@ public function getCompanyWorkerProjects($company_worker_id){
 
  public function managerCompletedProjects($manager_id){
     try {
-      $get_projects=Project::with('tasks')->where('manager_id',$manager_id)->get();
+        $project_id = ProjectManager::select('project_id')->where('manager_id', $manager_id)->get();
+      $get_projects=Project::with('tasks')->where('id',$project_id)->get();
 
       foreach ($get_projects as $key => $value) {
         /*$value->progress=$value->tasks()->where('task_status',1)->sum('percentage');*/
@@ -1127,10 +1237,11 @@ public function getCompanyWorkerProjects($company_worker_id){
 }
 public function managerOngoingProjects($manager_id){
      try {
-      $get_projects=Project::with('tasks')->where('manager_id',$manager_id)->get();
-      /*foreach ($get_projects as $key => $value) {
-        $value->progress=$value->tasks()->where('task_status',1)->sum('percentage');
-      }*/
+         $project_id = ProjectManager::select('project_id')->where('manager_id', $manager_id)->get();
+         $get_projects=Project::with('tasks')->where('id',$project_id)->get();
+          /*foreach ($get_projects as $key => $value) {
+            $value->progress=$value->tasks()->where('task_status',1)->sum('percentage');
+          }*/
 
          //checking status of projects (completed, in-progress) on basis of its tasks)
          foreach($get_projects as $prj){

@@ -18,7 +18,16 @@ class CompanyController extends Controller
      */
     public function index()
     {
-        //
+        try {
+            $companies = Company::all();
+           //dd($companies);
+            return response()->json([
+                $companies
+            ], 200);
+        }catch (\Exception $e)
+        {
+            return $this->responseFail();
+        }
     }
 
     /**

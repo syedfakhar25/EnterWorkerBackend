@@ -23,6 +23,9 @@ class CreateProjectsTable extends Migration
             $table->text('description')->nullable();
             $table->string('project_offer')->nullable();
             $table->string('project_drawing')->nullable();
+            $table->text('offer_comment')->nullable();
+            $table->text('drawing_comment')->nullable();
+            $table->text('project_drawing')->nullable();
             $table->string('street')->nullable();
             $table->string('postal_code')->nullable();
             $table->string('city')->nullable();

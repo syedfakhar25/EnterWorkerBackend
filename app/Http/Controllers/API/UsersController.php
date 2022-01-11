@@ -43,6 +43,15 @@ class UsersController extends Controller
                             on (users.designation_id = designations.id);"));
         foreach ($employees as $emp){
             $emp->img =  asset('user_images/' . $emp->img);
+            if($emp->manager_type == 1){
+                $emp->manager_type = 'Economy';
+            }elseif($emp->manager_type == 2){
+                $emp->manager_type = 'Architecture';
+            }elseif($emp->manager_type == 3){
+                $emp->manager_type = 'Builder';
+            }elseif($emp->manager_type == 1){
+                $emp->manager_type = 'Appraiser';
+            }
         }
 
         return response()->json([
@@ -68,20 +77,34 @@ class UsersController extends Controller
     public function store(Request $request)
     {
      try{
-        // dd('here');
-        // dd($request->designation_id);
-         $designation_name  = Designation::select('designation_name')->where('id', $request->designation_id)->first();
-         $d_name = $designation_name->designation_name;
 
-        $user= new User();
-        $user->first_name=$request->first_name;
-        $user->last_name=$request->last_name;
+        //dd($request->first_name);
+         $user= new User();
+         if($request->designation_id != NULL) {
+             $designation_name = Designation::select('designation_name')->where('id', $request->designation_id)->first();
+             $d_name = $designation_name->designation_name;
+             $user->designation_id = $request->designation_id;
+             $user->designation = $d_name;
+         }
+
+        if($request->first_name == NULL){
+            $user->first_name = '';
+        }else{
+            $user->first_name=$request->first_name;
+        }
+         if($request->last_name == NULL){
+             $user->last_name = ' ';
+         }else{
+             $user->last_name=$request->last_name;
+         }
+
         $user->by_company=$request->by_company;
         $user->manager_type=$request->manager_type;
         $user->phone=$request->phone;
         $user->gender=$request->gender;
-        $user->designation_id=$request->designation_id;
-        $user->designation=$d_name;
+        $user->address=$request->address;
+        $user->project_location=$request->project_location;
+        $user->description=$request->description;
         $user->email=$request->email;
         $user->password= Hash::make($request->password);
         $user->user_type=$request->user_type;
@@ -176,6 +199,9 @@ class UsersController extends Controller
         $user->manager_type=$request->manager_type;
         $user->phone=$request->phone;
         $user->gender=$request->gender;
+        $user->address=$request->address;
+        $user->project_location=$request->project_location;
+        $user->description=$request->description;
         $user->designation_id=$request->designation_id;
         $user->designation=$d_name;
         if( $user->email != $request->email){
@@ -265,8 +291,8 @@ class UsersController extends Controller
     {
         try
            {
-            $customers=new UsersCollection(User::where('user_type',4)->get());
-
+            $customers=User::where('user_type',4)->get();
+            //dd($customers);
             return $this->responseSuccess($customers);
         }catch (\Exception $e)
         {

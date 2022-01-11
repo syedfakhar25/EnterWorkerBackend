@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\Calenderevent;
+use App\Models\ProjectManager;
 use App\Models\Task;
 use App\Models\Project;
 use Illuminate\Http\Request;
@@ -167,9 +168,9 @@ class CalendereventController extends Controller
                         $events[]=$value->event;
                     }
                     return $this->responseSuccess($events);
-                    
+
                 } catch (Exception $e) {
-                    
+
                 }
         }
 
@@ -184,18 +185,19 @@ class CalendereventController extends Controller
                         $value1->event->color=json_decode($value1->event->color);
                         $events[]=$value1->event;
                         }
-                        
+
                     }
                     return $this->responseSuccess($events);
-                    
+
                 } catch (Exception $e) {
-                    
+
                 }
         }
 
     public function managerEvents($manager_id){
                 try {
-                    $projects=Project::with('tasks.event.task.project')->where('manager_id',$manager_id)->get();
+                    $project_id = ProjectManager::select('project_id')->where('manager_id', $manager_id)->get();
+                    $projects=Project::with('tasks.event.task.project')->where('id',$project_id)->get();
                     $events=[];
                     foreach ($projects as $key => $value) {
                         foreach ($value->tasks as $key => $value1) {
@@ -204,13 +206,13 @@ class CalendereventController extends Controller
                         $value1->event->color=json_decode($value1->event->color);
                         $events[]=$value1->event;
                         }
-                        
+
                     }
-    
+
                     return $this->responseSuccess($events);
-                    
+
                 } catch (Exception $e) {
-                    
+
                 }
         }
     public function adminEvents(){
@@ -224,13 +226,13 @@ class CalendereventController extends Controller
                         $value1->event->color=json_decode($value1->event->color);
                         $events[]=$value1->event;
                         }
-                        
+
                     }
                     return $events;
                     return $this->responseSuccess($events);
-                    
+
                 } catch (Exception $e) {
-                    
+
                 }
         }
         public function adminEventNotification(Request $request){
@@ -260,13 +262,14 @@ class CalendereventController extends Controller
         ]);
         try
         {
-            $projects=Project::with('tasks.event.task.project')->where('manager_id',$request->manager_id)->get();
+            $project_id = ProjectManager::select('project_id')->where('manager_id', $request->manager_id)->get();
+            $projects=Project::with('tasks.event.task.project')->where('id',$project_id)->get();
                     $task_ids=[];
                     foreach ($projects as $key => $value) {
                         foreach ($value->tasks as $key => $value1) {
                         $task_ids[]=$value1->id;
                         }
-                        
+
                     }
                     // return $task_ids;
           $current_events=Calenderevent::with('task.project')->whereIn('task_id',$task_ids)->where('start', '<=', $request->current_date)
@@ -296,7 +299,7 @@ class CalendereventController extends Controller
                         foreach ($value->tasks as $key => $value1) {
                         $task_ids[]=$value1->id;
                         }
-                        
+
                     }
           $current_events=Calenderevent::with('task.project')->whereIn('task_id',$task_ids)->where('start', '<=', $request->current_date)
           ->where('end', '>=', $request->current_date)
@@ -310,7 +313,7 @@ class CalendereventController extends Controller
       {
         return $this->responseFail();
     }
-    } 
+    }
      public function employeeEventNotification(Request $request){
         $request->validate([
             'current_date' => 'required|date',
@@ -323,7 +326,7 @@ class CalendereventController extends Controller
                         foreach ($tasks as $key => $value) {
                         $task_ids[]=$value->id;
                         }
-                        
+
           $current_events=Calenderevent::with('task.project')->whereIn('task_id',$task_ids)->where('start', '<=', $request->current_date)
           ->where('end', '>=', $request->current_date)
           ->get();
@@ -336,5 +339,5 @@ class CalendereventController extends Controller
       {
         return $this->responseFail();
     }
-    }      
+    }
 }

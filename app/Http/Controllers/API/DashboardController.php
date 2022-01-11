@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\Designation;
+use App\Models\ProjectManager;
 use App\Models\Step;
 use Illuminate\Http\Request;
 use App\Http\Traits\ApiMessagesTrait;
@@ -118,7 +119,9 @@ class DashboardController extends Controller
   }
   public function managerDashboard($manager_id){
      try {
-         $projects=Project::where('manager_id',$manager_id)->get();
+         $project_id = ProjectManager::select('project_id')->where('manager_id', $manager_id)->get();
+         $projects=Project::find($project_id);
+        // dd($projects);
          //checking status of projects (completed, in-progress) on basis of its tasks)
          ///for getting status of peojects
          $project_status=Project::select('id','status')->get();

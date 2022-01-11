@@ -58,7 +58,8 @@ Route::group(['prefix'=>'admin'],function(){
     Route::get('get-steps/{id}',  [\App\Http\Controllers\API\StepController::class,'getSteps']);
     Route::post('/step-in',  [\App\Http\Controllers\API\StepController::class,'stepIn']);
     Route::put('/step-automation/{id}', [\App\Http\Controllers\API\StepController::class, 'stepAutomation']);
-    Route::put('/add-manager/{id}', [ProjectController::class,'addProjectManager']);
+    Route::post('/add-manager/{id}', [ProjectController::class,'addProjectManager']);
+    Route::get('/get-managers/{id}', [ProjectController::class,'getProjectManagers']);
 
     //routes related to adding project team in a Project
     Route::resource('project-team', \App\Http\Controllers\API\ProjectTeamController::class);
@@ -70,8 +71,15 @@ Route::group(['prefix'=>'admin'],function(){
     //add project documents
     Route::post('upload-project-offer/{id}', [ProjectController::class, 'uploadProjectOffer']);
     Route::get('get-project-offer/{id}', [ProjectController::class, 'getProjectOffer']);
+    Route::get('get-project-offer-client/{id}', [ProjectController::class, 'getProjectOfferClient']);
     Route::post('upload-project-drawing/{id}', [ProjectController::class, 'uploadProjectDrawing']);
     Route::get('get-project-drawing/{id}', [ProjectController::class, 'getProjectDrawing']);
+    Route::get('get-project-drawing-client/{id}', [ProjectController::class, 'getProjectDrawingClient']);
+    //offer and drawing comments by customer
+    Route::post('offer-comment/{id}', [ProjectController::class, 'OfferComment']);
+    Route::post('drawing-comment/{id}', [ProjectController::class, 'DrawingComment']);
+    Route::post('timline-comment/{id}', [ProjectController::class, 'TimelineComment']);
+    Route::get('project_timeline/{id}', [ProjectController::class, 'ProjectTimeline']);
 
     //employee adding project pictures
     Route::post('/upload-project-picture', [ProjectController::class, 'uploadProjectImages']);
