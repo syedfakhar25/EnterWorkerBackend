@@ -17,7 +17,8 @@ class CreateUsersTable extends Migration
             $table->id();
             $table->string('first_name')->nullable();
             $table->string('last_name')->nullable();
-            $table->string('by_company')->nullable();
+            $table->integer('by_company')->nullable(); // company worker employee is added by company or not
+            $table->integer('company')->nullable(); // send company's id
             $table->bigInteger('manager_type')->nullable();
             $table->string('phone')->nullable();
             $table->string('email');

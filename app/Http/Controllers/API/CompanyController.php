@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Company;
 use App\Http\Requests\StoreCompanyRequest;
 use App\Http\Requests\UpdateCompanyRequest;
+use App\Models\PorjectCompanyWorker;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -21,6 +23,31 @@ class CompanyController extends Controller
         try {
             $companies = Company::all();
            //dd($companies);
+            return response()->json([
+                $companies
+            ], 200);
+        }catch (\Exception $e)
+        {
+            return $this->responseFail();
+        }
+    }
+
+    public function companyForProject(Request $request, $pid)
+    {
+        try {
+            //dd($pid);
+            $companies = Company::all();
+           $project_company = PorjectCompanyWorker::where('project_id', $pid)->get();
+           $company_ids= array();
+           foreach($project_company as $pc){
+               $company_ids[] = $pc->company_worker_id;
+           }
+           // dd($company_ids);
+           $companies = Company::whereNotIn('id', $company_ids)->get();
+            $img_path=asset('company_images/');
+           foreach ($companies as $cmp){
+               $cmp->image=$img_path.'/'.$cmp->image;
+           }
             return response()->json([
                 $companies
             ], 200);
@@ -67,8 +94,18 @@ class CompanyController extends Controller
                 $request->image->move(public_path('company_images'), $imageName);
                 $company->image = $imageName;
             }
+
             //dd($company);
             $company->save();
+           // dd($request->all());
+
+            $user = new User();
+            $user->email = $request->email;
+            $user->first_name = $request->name;
+            $user->password = Hash::make($request->password);
+            $user->company = $company->id;
+            $user->save();
+           // dd($company->id);
             return response()->json([
                 $company
             ], 200);
@@ -86,7 +123,15 @@ class CompanyController extends Controller
      */
     public function show(Company $company)
     {
-        //
+        try {
+            //dd($companies);
+            return response()->json([
+                $company
+            ], 200);
+        }catch (\Exception $e)
+        {
+            return $this->responseFail();
+        }
     }
 
     /**
@@ -121,14 +166,24 @@ class CompanyController extends Controller
             $company->manager_name = $request->manager_name ;
             $company->manager_email = $request->manager_email ;
             $company->manager_phone = $request->manager_phone ;
+           // dd($request->name);
             //return $this->responseSuccess($step);
             if (!empty($request->image)) {
                 $imageName = time() . '.' . $request->image->extension();
                 $request->image->move(public_path('company_images'), $imageName);
                 $company->image = $imageName;
             }
-            //dd($company);
+
+            //dd($company->id);
             $company->update();
+            $user = User::where('company', $company->id)->first();
+
+            $user->password = Hash::make($request->password);
+            $user->first_name = $request->name;
+
+            $user->save();
+          //  dd($user);
+
             return response()->json([
                 $company
             ], 200);
@@ -148,6 +203,9 @@ class CompanyController extends Controller
     {
         try{
             $company->delete();
+            $user = User::where('company', $company->id)->first();
+            $user->delete();
+
             return response()->json([
                 'deleted'
             ], 200);

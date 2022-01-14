@@ -83,10 +83,10 @@ class TaskController extends Controller
             $calenderevent= new Calenderevent();
             $calenderevent->task_id=$task->id;
             $calenderevent->title=$request->title;
-            $calenderevent->color=json_encode($request->color);
+       /*     $calenderevent->color=json_encode($request->color);
             $calenderevent->allDay=$request->allDay;
-            $calenderevent->start=$request->start;
-            $calenderevent->end=$request->end;
+            $calenderevent->start=$request->start;*/
+            $calenderevent->end=$request->deadline;
             $calenderevent->save();
 
             return response()->json([

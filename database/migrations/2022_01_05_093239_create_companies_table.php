@@ -24,7 +24,7 @@ class CreateCompaniesTable extends Migration
             $table->string('confirm_password')->nullable();
             $table->text('image')->nullable();
             $table->string('manager_name')->nullable();
-            $table->string('manager_email');
+            $table->string('manager_email')->nullable();
             $table->string('manager_phone')->nullable();
             $table->timestamps();
         });

@@ -78,7 +78,7 @@ Route::group(['prefix'=>'admin'],function(){
     //offer and drawing comments by customer
     Route::post('offer-comment/{id}', [ProjectController::class, 'OfferComment']);
     Route::post('drawing-comment/{id}', [ProjectController::class, 'DrawingComment']);
-    Route::post('timline-comment/{id}', [ProjectController::class, 'TimelineComment']);
+    Route::post('timeline-comment/{id}', [ProjectController::class, 'TimelineComment']);
     Route::get('project_timeline/{id}', [ProjectController::class, 'ProjectTimeline']);
 
     //employee adding project pictures
@@ -113,7 +113,8 @@ Route::group(['prefix'=>'manager'],function(){
     Route::resource('steps', \App\Http\Controllers\API\StepController::class);
     Route::get('get-steps/{id}',  [\App\Http\Controllers\API\StepController::class,'getSteps']);
     Route::put('/add-manager/{id}', [ProjectController::class,'addProjectManager']);
-    Route::put('/assign-company-worker/{id}', [ProjectController::class,'addCompanyWorker']);
+    Route::post('/assign-company-worker/{id}', [ProjectController::class,'addCompanyWorker']);
+    Route::get('/get-projects_company-workers/{id}', [ProjectController::class,'getProjectsCompanyWorker']);
 
     //routes related to adding project team in a Project
     Route::resource('project-team', \App\Http\Controllers\API\ProjectTeamController::class);
@@ -169,5 +170,7 @@ Route::get('/employee-for-project/{project_id}', [ProjectController::class,'empl
 Route::get('/employee-for-company/{project_id}', [ProjectController::class,'employeeForCompany']);
 Route::post('/employee-tasks', [TaskController::class,'getEmployeeTasks'])->name('get.employee.tasks');
 
+//these are companies to show in a project
+Route::get('company-for-project/{project_id}', [\App\Http\Controllers\API\CompanyController::class, 'companyForProject']);
 
 // chat section

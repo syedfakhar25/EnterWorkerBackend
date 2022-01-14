@@ -32,6 +32,7 @@ class User extends Authenticatable
         'img',
         'user_type',
         'manager_type',
+        'company',
         'address',
         'project_location',
         'description'

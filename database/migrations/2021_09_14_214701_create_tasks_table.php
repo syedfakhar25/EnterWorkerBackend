@@ -21,7 +21,7 @@ class CreateTasksTable extends Migration
             $table->string('title')->nullable();
            // $table->double('percentage');
             $table->date('deadline')->nullable();
-            $table->boolean('task_status')->default(0);
+            $table->bigInteger('task_status')->default(0);
             $table->boolean('is_important');
             //$table->boolean('active');
             $table->timestamps();

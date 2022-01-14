@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CompanyTeam;
 use App\Models\ExtraWork;
 use App\Models\OrderDetail;
+use App\Models\PorjectCompanyWorker;
 use App\Models\Project;
 use App\Models\ProjectManager;
 use App\Models\ProjectPicture;
@@ -279,16 +280,47 @@ class ProjectController extends Controller
     //assign company worker to a project
     public function addCompanyWorker(Request $request, $pid){
         try{
-            $project  = Project::find($pid);
-            $project->company_worker_id = $request->company_worker_id;
-            $project->save();
+            $company_workers = new PorjectCompanyWorker();
+            $company_workers->project_id = $pid;
+            $company_workers->company_worker_id = $request->company_worker_id;
+            $company_workers->save();
+
+            $project = Project::find($pid);
             return response()->json([
-                $project
+                $project,
+                $company_workers
             ], 200);
         }catch (\Exception $e)
         {
             return $this->responseFail();
         }
+    }
+
+    public function getProjectsCompanyWorker(Request $request, $id){
+        try{
+            $company_workers = PorjectCompanyWorker::select('company_worker_id')->where('project_id', $id)->get();
+
+            $managers= array();
+            foreach ($company_workers as $team){
+                $managers[]= $team->company_worker_id;
+            }
+            //dd($managers);
+            $managers_id[0] = implode(',', $managers);
+            $company_workers = \Illuminate\Support\Facades\DB::select(DB::raw("select  * from companies where id IN ($managers_id[0])"));
+
+            foreach ($company_workers as $end){
+                $end->image=asset('company_images/' . $end->image);
+            }
+            $company_workers = $company_workers;
+            return response()->json([
+                $company_workers
+
+            ], 200);
+        }catch (\Exception $e)
+        {
+            return $this->responseFail();
+        }
+
     }
 
     //adding project documents
@@ -358,41 +390,61 @@ class ProjectController extends Controller
 
     //get project offer for client
     public function getProjectOfferClient(Request $request, $id){
-        $name = Project::where('customer_id', $id)->get();
-      //  dd($name);
-        $name = $name[0]->project_offer;
-        $project_offer  =asset('project_files/' .$name);
-        // dd($project_offer);
-        return response()->json([
-            $project_offer
-        ], 200);
+        try{
+            $name = Project::where('customer_id', $id)->get();
+            //  dd($name);
+            $name = $name[0]->project_offer;
+            $project_offer  =asset('project_files/' .$name);
+            // dd($project_offer);
+            return response()->json([
+                $project_offer
+            ], 200);
+        }catch (\Exception $e)
+        {
+            return $this->responseFail();
+        }
     }
 
     public function OfferComment(Request $request, $id){
-        $project = Project::where('customer_id', $id)->get();
-        $project[0]->offer_comment = $request->offer_comment;
-        $project[0]->save();
-        return response()->json([
-            $project[0]
-        ], 200);
+        try{
+            $project = Project::where('customer_id', $id)->get();
+            $project[0]->offer_comment = $request->offer_comment;
+            $project[0]->save();
+            return response()->json([
+                $project[0]
+            ], 200);
+        }catch (\Exception $e)
+        {
+            return $this->responseFail();
+        }
     }
 
     public function DrawingComment(Request $request, $id){
-        $project = Project::where('customer_id', $id)->get();
-        $project[0]->drawing_comment = $request->drawing_comment;
-        $project[0]->save();
-        return response()->json([
-            $project[0]
-        ], 200);
+        try{
+            $project = Project::where('customer_id', $id)->get();
+            $project[0]->drawing_comment = $request->drawing_comment;
+            $project[0]->save();
+            return response()->json([
+                $project[0]
+            ], 200);
+        }catch (\Exception $e)
+        {
+            return $this->responseFail();
+        }
     }
 
     public function TimelineComment(Request $request, $id){
-        $project = Project::where('customer_id', $id)->get();
-        $project[0]->timline_comment = $request->timline_comment;
-        $project[0]->save();
-        return response()->json([
-            $project[0]
-        ], 200);
+        try{
+            $project = Project::where('customer_id', $id)->get();
+            $project[0]->timline_comment = $request->timline_comment;
+            $project[0]->save();
+            return response()->json([
+                $project[0]
+            ], 200);
+        }catch (\Exception $e)
+        {
+            return $this->responseFail();
+        }
     }
 
     public function ProjectTimeline(Request $request, $id){

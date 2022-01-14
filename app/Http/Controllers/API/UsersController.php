@@ -128,7 +128,8 @@ class UsersController extends Controller
             $role= Role::where('name','customer')->first();
             $user->assignRole($role);
         }
-        if($user->user_type==5){
+
+        if($user->company!=NULL){
              $role= Role::where('name','company_worker')->first();
              $user->assignRole($role);
          }
@@ -238,7 +239,7 @@ class UsersController extends Controller
             $role= Role::where('name','customer')->first();
             $user->assignRole($role);
         }
-        if($user->user_type==5){
+        if($user->company!=NULL){
             $role= Role::where('name','company_worker')->first();
             $user->assignRole($role);
         }
