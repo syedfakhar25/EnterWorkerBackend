@@ -38,17 +38,18 @@ class StepController extends Controller
             foreach ($steps as $step){
 
                 $tasks = Task::where('step_id', $step->id)->get();
-
                 $task_details= array();
                 foreach ($tasks as $task){
                     $employees[]= $task->employee_id;
-                    $employee_detail =DB::select(DB::raw("select  users.id, users.first_name as name, users.img, designations.designation_name from users
+                    $employee_detail =DB::select(DB::raw("select  users.id, users.first_name, users.last_name, users.img, designations.designation_name from users
                       join designations on designations.id = users.designation_id where users.id = $task->employee_id"));
-                   // dd($employee_detail);
-                    $employee_detail[0]->img = asset('user_images/' . $employee_detail[0]->img);
-                    $task['employee_details']=$employee_detail[0];
+                   //dd($employee_detail);
+                    if($employee_detail!=NULL) {
+                        $employee_detail[0]->img = asset('user_images/' . $employee_detail[0]->img);
+                        $task['employee_details'] = $employee_detail[0];
+                    }
                     $task_details[] = $task;
-                   // dd($task_details);
+                   //dd($task_details);
                 }
 
 

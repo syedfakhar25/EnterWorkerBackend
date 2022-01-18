@@ -22,6 +22,10 @@ class CompanyController extends Controller
     {
         try {
             $companies = Company::all();
+            $img_path=asset('company_images/');
+            foreach ($companies as $key => $value) {
+                $value->image=$img_path.'/'.$value->image;
+            }
            //dd($companies);
             return response()->json([
                 $companies
@@ -124,7 +128,7 @@ class CompanyController extends Controller
     public function show(Company $company)
     {
         try {
-            //dd($companies);
+            $company->image=asset('company_images/' . $company->image);
             return response()->json([
                 $company
             ], 200);
@@ -155,17 +159,41 @@ class CompanyController extends Controller
     public function update(Request $request, Company $company)
     {
         try{
+
+            if(!empty($request->name))
+                //dd($request->name);
             $company->name = $request->name ;
+
+            if(!empty($request->organization_number))
             $company->organization_number = $request->organization_number ;
+
+            if(!empty($request->address))
             $company->address = $request->address ;
+
+            if(!empty($request->contact_number))
             $company->contact_number = $request->contact_number ;
+
+            if(!empty($request->email))
             $company->email = $request->email ;
+
+            if(!empty($request->password))
             $company->password= Hash::make($request->password);
+
+            if(!empty($request->confirm_password))
             $company->confirm_password = Hash::make($request->confirm_password);
+
+            if(!empty($request->image))
             $company->image = $request->image ;
+
+            if(!empty($request->manager_name))
             $company->manager_name = $request->manager_name ;
+
+            if(!empty($request->manager_email))
             $company->manager_email = $request->manager_email ;
+
+            if(!empty($request->manager_phone))
             $company->manager_phone = $request->manager_phone ;
+
            // dd($request->name);
             //return $this->responseSuccess($step);
             if (!empty($request->image)) {
@@ -177,11 +205,12 @@ class CompanyController extends Controller
             //dd($company->id);
             $company->update();
             $user = User::where('company', $company->id)->first();
-
+            if(!empty($request->password))
             $user->password = Hash::make($request->password);
+            if(!empty($request->name))
             $user->first_name = $request->name;
 
-            $user->save();
+            $user->update();
           //  dd($user);
 
             return response()->json([

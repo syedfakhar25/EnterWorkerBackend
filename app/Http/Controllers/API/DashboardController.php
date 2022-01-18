@@ -120,7 +120,7 @@ class DashboardController extends Controller
   public function managerDashboard($manager_id){
      try {
          $project_id = ProjectManager::select('project_id')->where('manager_id', $manager_id)->get();
-         $projects=Project::find($project_id);
+         $projects=Project::whereIn('id',$project_id)->get();
         // dd($projects);
          //checking status of projects (completed, in-progress) on basis of its tasks)
          ///for getting status of peojects

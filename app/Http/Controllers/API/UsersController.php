@@ -49,7 +49,7 @@ class UsersController extends Controller
                 $emp->manager_type = 'Architecture';
             }elseif($emp->manager_type == 3){
                 $emp->manager_type = 'Builder';
-            }elseif($emp->manager_type == 1){
+            }elseif($emp->manager_type == 4){
                 $emp->manager_type = 'Appraiser';
             }
         }
@@ -120,7 +120,7 @@ class UsersController extends Controller
             $role= Role::where('name','manager')->first();
             $user->assignRole($role);
         }
-        if($user->user_type==3){
+        if($user->user_type==3 || $user->user_type==5){
             $role= Role::where('name','employee')->first();
             $user->assignRole($role);
         }
@@ -189,7 +189,9 @@ class UsersController extends Controller
     public function update(Request $request,  User $user)
     {
         try{
-       // dd($request->password);
+            $user->password = Hash::make($request->password);
+            $user->save();
+       /*// dd($request->password);
         $designation_name  = Designation::select('designation_name')->where('id', $request->designation_id)->first();
 
         // dd($request->designation_id);
@@ -231,7 +233,7 @@ class UsersController extends Controller
             $role= Role::where('name','manager')->first();
             $user->assignRole($role);
         }
-        if($user->user_type==3){
+        if($user->user_type==3 || $user->user_type==5){
             $role= Role::where('name','employee')->first();
             $user->assignRole($role);
         }
@@ -243,7 +245,7 @@ class UsersController extends Controller
             $role= Role::where('name','company_worker')->first();
             $user->assignRole($role);
         }
-        $user->img=asset('user_images/' . $user->img);
+        $user->img=asset('user_images/' . $user->img);*/
             return response()->json([
                 $user
             ], 200);
@@ -281,6 +283,10 @@ class UsersController extends Controller
         try
            {
             $employee=new UsersCollection(User::where('user_type',3)->get());
+               $img_path=asset('user_images/');
+               foreach ($employee as $key => $value) {
+                   $value->img=$img_path.'/'.$value->img;
+               }
 
             return $this->responseSuccess($employee);
         }catch (\Exception $e)
@@ -293,6 +299,10 @@ class UsersController extends Controller
         try
            {
             $customers=User::where('user_type',4)->get();
+               $img_path=asset('user_images/');
+               foreach ($customers as $key => $value) {
+                   $value->img=$img_path.'/'.$value->img;
+               }
             //dd($customers);
             return $this->responseSuccess($customers);
         }catch (\Exception $e)
@@ -305,6 +315,10 @@ class UsersController extends Controller
         try
            {
             $managers=new UsersCollection(User::where('user_type',2)->get());
+               $img_path=asset('user_images/');
+               foreach ($managers as $key => $value) {
+                   $value->img=$img_path.'/'.$value->img;
+               }
 
             return $this->responseSuccess($managers);
         }catch (\Exception $e)
@@ -313,10 +327,14 @@ class UsersController extends Controller
         }
     }
 
-    public function getallCompanyWorkers()
+    public function getallCompanyEmployees()
     {
         try {
             $company_workers = new UsersCollection(User::where('user_type', 5)->get());
+            $img_path=asset('user_images/');
+            foreach ($company_workers as $key => $value) {
+                $value->img=$img_path.'/'.$value->img;
+            }
 
             return $this->responseSuccess($company_workers);
         } catch (\Exception $e) {

@@ -134,6 +134,7 @@ Route::group(['prefix' => 'company'], function (){
     Route::get('/get-company-worker-projects/{company_worker_id}', [ProjectController::class,'getCompanyWorkerProjects']);
     Route::get('get-company-worker-steps/{id}',  [\App\Http\Controllers\API\StepController::class,'getCompanyWorkerSteps']);
     Route::get('get-company-worker-employees/{id}',  [\App\Http\Controllers\API\UsersController::class,'getCompanyWorkerEmployees']);
+    Route::get('company_workers_employees',  [\App\Http\Controllers\API\UsersController::class,'getallCompanyEmployees']);
 });
 Route::group(['prefix'=>'employee'],function(){
     Route::get('dashboard/{employee_id}', [DashboardController::class,'employeeDashboard'])->name('employee.dashboard');
@@ -162,7 +163,7 @@ Route::group(['prefix'=>'customer'],function(){
 Route::get('/all-employee', [UsersController::class,'getallemployee'])->name('allemployee');
 Route::get('/all-customer', [UsersController::class,'getallcustomer'])->name('allcustomer');
 Route::get('/all-manager', [UsersController::class,'getallmanagers'])->name('allmanagers');
-Route::get('/all-company-workers', [UsersController::class,'getallCompanyWorkers'])->name('getallCompanyWorkers');
+Route::get('/all-company-workers', [UsersController::class,'getallCompanyEmployees'])->name('getallCompanyEmployees');
 Route::post('/update-task-status', [TaskController::class,'updateTaskStatus'])->name('update.task.status');
 Route::post('/pin-project', [ProjectController::class,'pinProject'])->name('pin.project');
 Route::get('/get-user-pin-project/{user_id}', [ProjectController::class,'getUserPinProject'])->name('get.user.pin.project');

@@ -925,14 +925,28 @@ class ProjectController extends Controller
        /*   $projects_managers = DB::table('projects')
               ->leftJoin('users', 'users.id', '=', 'projects.manager_id')
               ->get();*/
-        $projects=Project::with('customer','tasks','pinnedproject', 'manager')->where('customer_id',$customer_id)->get();
-     //  dd($projects);
-        /*$managers = array();
-        foreach ($projects as $project){
-            $managers[] = $project->manager_id;
-        }
-          $manager_id[0] = implode(',', $managers);
-          $manager_name_designations = \Illuminate\Support\Facades\DB::select(DB::raw("select  users.id, users.first_name, users.last_name, users.img, designations.designation_name from users
+     //  dd($customer_id);
+        $projects=Project::with('customer','tasks','pinnedproject')->where('customer_id',$customer_id)->get();
+          $managers = array();
+          foreach ($projects as $project){
+              $project_managers = ProjectManager::where('project_id', $project->id)->get();
+              foreach($project_managers as $pm){
+                  if($pm!=NULL)
+                      $managers[]= $pm->manager_id;
+              }
+
+          }
+          //dd($managers);
+          $managers = User::whereIn('id', $managers)->get();
+          $img_path=asset('user_images/');
+          foreach ($managers as $mm){
+              $mm->img = $img_path.'/'.$mm->img;
+          }
+          $managers = [
+              'managers' => $managers
+          ];
+
+          /*$manager_name_designations = \Illuminate\Support\Facades\DB::select(DB::raw("select  users.id, users.first_name, users.last_name, users.img, designations.designation_name from users
                       join designations on designations.id = users.designation_id where users.id IN ($manager_id[0])"));
           foreach ($manager_name_designations as $end){
               $end->img=asset('user_images/' . $end->img);
@@ -957,7 +971,6 @@ class ProjectController extends Controller
         $img_path=asset('user_images/');
         $pin_status=0;
         foreach ($projects as $key => $value) {
-        /*  $value->progress=$value->tasks()->where('task_status',1)->sum('percentage');*/
           $employee=[];
           foreach ($value->tasks as $key => $value1) {
             if(isset($value1->employee->img)){
@@ -972,18 +985,27 @@ class ProjectController extends Controller
            $value->pin_status=0;
          }
          $value->employee=$employee;
-         $project_employee=collect($value->employee)->groupBy('id')->map(function ($item) {
-            return array_merge(...$item->toArray());
-            });
-            $decode_employee=json_decode($project_employee);
-            $project_employees=[];
-            foreach ($decode_employee as $key => $value2) {
-              $project_employees[]=$value2;
-            }
-            $value->employee=$project_employees;
-            foreach (  $value->employee as $emp){
-                $emp->img =  $emp->img;
-            }
+          if($value->employee !=NULL){
+              $project_employee=collect($value->employee)->groupBy('id')->map(function ($item) {
+                  return array_merge(...$item->toArray());
+              });
+              if($project_employee!=NULL){
+                  $decode_employee=json_decode($project_employee);
+                  $project_employees=[];
+                  if($project_employees!=NULL){
+                      foreach ($decode_employee as $key => $value2) {
+                          $project_employees[]=$value2;
+                      }
+                      $value->employee=$project_employees;
+                      foreach (  $value->employee as $emp){
+                          $emp->img =  $emp->img;
+                      }
+                  }
+
+              }
+
+          }
+
        }
 
 
@@ -991,6 +1013,7 @@ class ProjectController extends Controller
       //  dd($projects);
           return response()->json([
               $projects,
+              $managers
              // $manager_info
           ], 200);
 
@@ -1101,9 +1124,12 @@ public function getManagerProjects($manager_id){
 
   try
   {
-
-      $project_id = ProjectManager::select('project_id')->where('manager_id', $manager_id)->get();
-      $projects=Project::with('customer','tasks','pinnedproject')->where('id',$project_id)->get();
+      $projectManagers = ProjectManager::select('project_id')->where('manager_id', $manager_id)->get();
+      $ids = [];
+      foreach($projectManagers as $pc){
+          $ids[] = $pc->project_id;
+      }
+      $projects=Project::with('customer','tasks','pinnedproject')->whereIn('id',$ids)->get();
       $pin_status=0;
 
       //checking status of projects (completed, in-progress) on basis of its tasks)
@@ -1162,7 +1188,13 @@ public function getCompanyWorkerProjects($company_worker_id){
 
   try
   {
-    $projects=Project::with('customer','tasks','pinnedproject')->where('company_worker_id',$company_worker_id)->get();
+      $projectCompany = PorjectCompanyWorker::where('company_worker_id', $company_worker_id)->get();
+     $ids = [];
+     foreach($projectCompany as $pc){
+         $ids[] = $pc->project_id;
+     }
+    $projects=Project::with('customer','tasks','pinnedproject')->whereIn('id',$ids)->get();
+   // dd($projects);
     $pin_status=0;
 
       //checking status of projects (completed, in-progress) on basis of its tasks)
@@ -1220,7 +1252,7 @@ public function getCompanyWorkerProjects($company_worker_id){
 
  public function managerCompletedProjects($manager_id){
     try {
-        $project_id = ProjectManager::select('project_id')->where('manager_id', $manager_id)->get();
+        $project_id = ProjectManager::select('project_id')->whereIn('manager_id', $manager_id)->get();
       $get_projects=Project::with('tasks')->where('id',$project_id)->get();
 
       foreach ($get_projects as $key => $value) {
@@ -1290,7 +1322,7 @@ public function getCompanyWorkerProjects($company_worker_id){
 public function managerOngoingProjects($manager_id){
      try {
          $project_id = ProjectManager::select('project_id')->where('manager_id', $manager_id)->get();
-         $get_projects=Project::with('tasks')->where('id',$project_id)->get();
+         $get_projects=Project::with('tasks')->whereIn('id',$project_id)->get();
           /*foreach ($get_projects as $key => $value) {
             $value->progress=$value->tasks()->where('task_status',1)->sum('percentage');
           }*/
