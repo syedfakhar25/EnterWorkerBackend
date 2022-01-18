@@ -1193,8 +1193,9 @@ public function getCompanyWorkerProjects($company_worker_id){
      foreach($projectCompany as $pc){
          $ids[] = $pc->project_id;
      }
+
     $projects=Project::with('customer','tasks','pinnedproject')->whereIn('id',$ids)->get();
-   // dd($projects);
+   //dd($projects);
     $pin_status=0;
 
       //checking status of projects (completed, in-progress) on basis of its tasks)

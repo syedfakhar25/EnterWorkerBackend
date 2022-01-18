@@ -67,28 +67,36 @@ class StepController extends Controller
         }
     }
 
-    public function getCompanyWorkerSteps($pid)
+    public function getCompanyWorkerSteps(Request $request, $pid)
     {
         try{
-            $steps = Step::where('project_id', $pid)->where('company_worker', 1)->orderBy('step_order')->get();
-            //dd($steps);
+            $company_worker = $request->company_worker;
+            //dd($company_worker);
+            $steps = Step::where('project_id', $pid)->where('company_worker', $company_worker)->orderBy('step_order')->get();
+           // dd($steps);
             $step_details = array();
             foreach ($steps as $step){
-
                 $tasks = Task::where('step_id', $step->id)->get();
-
+                //dd($tasks);
                 $task_details= array();
                 foreach ($tasks as $task){
+
                     $employees[]= $task->employee_id;
-                    $employee_detail =DB::select(DB::raw("select  users.id, users.first_name as name, users.img, designations.designation_name from users
+
+                    $employee_detail =DB::select(DB::raw("select  users.id, users.first_name, users.last_name , users.img, designations.designation_name from users
                       join designations on designations.id = users.designation_id where users.id = $task->employee_id"));
-                    // dd($employee_detail);
-                    $employee_detail[0]->img = asset('user_images/' . $employee_detail[0]->img);
-                    $task['employee_details']=$employee_detail[0];
-                    $task_details[] = $task;
+                   dd($employee_detail);
+                    if(!empty($employee_detail)){
+                       dd('dd');
+                       $employee_detail[0]->img = asset('user_images/' . $employee_detail[0]->img);
+                       $task['employee_details']=$employee_detail[0];
+                       $task_details[] = $task;
+                   }else{
+                       $task_details[] = $task;
+                   }
+
                     // dd($task_details);
                 }
-
 
                 $step_info = $step;
                 $step_info['task_details'] = $task_details;

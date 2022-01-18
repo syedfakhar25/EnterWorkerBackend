@@ -108,9 +108,9 @@ class UsersController extends Controller
         $user->email=$request->email;
         $user->password= Hash::make($request->password);
         $user->user_type=$request->user_type;
-
         if (!empty($request->img)) {
                 $imageName = time() . '.' . $request->img->extension();
+                //dd($imageName);
                 $request->img->move(public_path('user_images'), $imageName);
                 $user->img = $imageName;
             }
@@ -189,32 +189,55 @@ class UsersController extends Controller
     public function update(Request $request,  User $user)
     {
         try{
-            $user->password = Hash::make($request->password);
-            $user->save();
-       /*// dd($request->password);
-        $designation_name  = Designation::select('designation_name')->where('id', $request->designation_id)->first();
+       if(!empty($request->designation_id)) {
+           $designation_name = Designation::select('designation_name')->where('id', $request->designation_id)->first();
+           $d_name = $designation_name->designation_name;
+       }
 
-        // dd($request->designation_id);
-        $d_name = $designation_name->designation_name;
+        if(!empty($request->first_name))
         $user->first_name=$request->first_name;
+
+        if(!empty($request->last_name))
         $user->last_name=$request->last_name;
+
+        if(!empty($request->by_company))
         $user->by_company=$request->by_company;
+
+        if(!empty($request->manager_type))
         $user->manager_type=$request->manager_type;
+
+        if(!empty($request->phone))
         $user->phone=$request->phone;
+
+        if(!empty($request->gender))
         $user->gender=$request->gender;
+
+        if(!empty($request->address))
         $user->address=$request->address;
+
+        if(!empty($request->project_location))
         $user->project_location=$request->project_location;
+
+        if(!empty($request->description))
         $user->description=$request->description;
-        $user->designation_id=$request->designation_id;
-        $user->designation=$d_name;
-        if( $user->email != $request->email){
-            $user->email=$request->email;
+
+        if(!empty($request->designation_id)){
+            $user->designation_id=$request->designation_id;
+            $user->designation=$d_name;
         }
+
+        if(!empty($request->email)){
+            if( $user->email != $request->email){
+                $user->email=$request->email;
+            }
+        }
+
         if($request->password!=NULL){
             $user->password= Hash::make($request->password);
            // dd('id');
         }
 
+        if(!empty($request->user_type))
         $user->user_type=$request->user_type;
 
         if (!empty($request->img)){
@@ -225,7 +248,7 @@ class UsersController extends Controller
             \File::put(public_path('user_images/').$imageName, base64_decode($file_data));
                         $user->img = $imageName;
         }
-      //  dd($user);
+
         $user->save();
         //dd($user);
         $user->roles()->detach();
@@ -245,7 +268,7 @@ class UsersController extends Controller
             $role= Role::where('name','company_worker')->first();
             $user->assignRole($role);
         }
-        $user->img=asset('user_images/' . $user->img);*/
+        $user->img=asset('user_images/' . $user->img);
             return response()->json([
                 $user
             ], 200);
