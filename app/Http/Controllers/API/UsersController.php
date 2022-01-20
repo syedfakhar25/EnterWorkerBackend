@@ -114,6 +114,9 @@ class UsersController extends Controller
                 $request->img->move(public_path('user_images'), $imageName);
                 $user->img = $imageName;
             }
+        else{
+            $user->img = 'dummy_image.png';
+        }
         $user->save();
 
         if($user->user_type==2){
@@ -303,13 +306,10 @@ class UsersController extends Controller
 
      public function getallemployee()
     {
+
         try
            {
             $employee=new UsersCollection(User::where('user_type',3)->get());
-               $img_path=asset('user_images/');
-               foreach ($employee as $key => $value) {
-                   $value->img=$img_path.'/'.$value->img;
-               }
 
             return $this->responseSuccess($employee);
         }catch (\Exception $e)
@@ -324,7 +324,7 @@ class UsersController extends Controller
             $customers=User::where('user_type',4)->get();
                $img_path=asset('user_images/');
                foreach ($customers as $key => $value) {
-                   $value->img=$img_path.'/'.$value->img;
+                   $value->img=$img_path.'/'.$value->image;
                }
             //dd($customers);
             return $this->responseSuccess($customers);
@@ -339,10 +339,6 @@ class UsersController extends Controller
            {
             $managers=new UsersCollection(User::where('user_type',2)->get());
                $img_path=asset('user_images/');
-               foreach ($managers as $key => $value) {
-                   $value->img=$img_path.'/'.$value->img;
-               }
-
             return $this->responseSuccess($managers);
         }catch (\Exception $e)
         {
@@ -354,10 +350,6 @@ class UsersController extends Controller
     {
         try {
             $company_workers = new UsersCollection(User::where('user_type', 5)->get());
-            $img_path=asset('user_images/');
-            foreach ($company_workers as $key => $value) {
-                $value->img=$img_path.'/'.$value->img;
-            }
 
             return $this->responseSuccess($company_workers);
         } catch (\Exception $e) {

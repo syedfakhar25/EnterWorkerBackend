@@ -97,6 +97,8 @@ class CompanyController extends Controller
                 $imageName = time() . '.' . $request->image->extension();
                 $request->image->move(public_path('company_images'), $imageName);
                 $company->image = $imageName;
+            }else{
+                $company->image = 'dummy_image.png';
             }
 
             //dd($company);
