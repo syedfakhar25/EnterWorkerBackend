@@ -99,6 +99,33 @@ class CompanyTeamController extends Controller
             return $this->responseFail();
         }
     }
+
+    //get project Team of Specific Project and specific company
+    public function TeamForCompany(Request $request, $project_id){
+        try{
+
+            $team_members = CompanyTeam::where('project_id', $project_id)->get();
+            $employees= array();
+            foreach ($team_members as $team){
+                $employees[]= $team->employee_id;
+            }
+            $by_company = intval($_GET['by_company']);
+            //  dd($employees);
+            $employees_id= array();
+            $employees_id[0] = implode(',', $employees);
+            $emp_name_designations = User::whereIn('id', $employees_id)->where('by_company', $by_company)->get();
+
+            foreach ($emp_name_designations as $end){
+                $end->img=asset('user_images/' . $end->img);
+            }
+            return response()->json([
+                $emp_name_designations
+            ], 200);
+        }catch (\Exception $e)
+        {
+            return $this->responseFail();
+        }
+    }
     /**
      * Display the specified resource.
      *

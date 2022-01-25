@@ -104,10 +104,17 @@ class ProjectController extends Controller
         //$project->manager_id=$request->manager_id;
         $project->name=$request->name;
         $project->description=$request->description;
+        //project actual address
         $project->street=$request->street;
         $project->postal_code=$request->postal_code;
         $project->city=$request->city;
-        $project->start_date= $request->start_date;
+
+        //customer's address
+          $project->cus_address=$request->cus_address;
+          $project->cus_postal_code=$request->cus_postal_code;
+          $project->cus_city=$request->cus_city;
+
+          $project->start_date= $request->start_date;
         $project->end_date=$request->end_date;
         $project->save();
 
@@ -205,11 +212,18 @@ class ProjectController extends Controller
         //$project->manager_id=$request->manager_id;
         $project->name=$request->name;
         $project->description=$request->description;
-        $project->street=$request->street;
-        $project->postal_code=$request->postal_code;
-        $project->city=$request->city;
+          //project actual address
+          $project->street=$request->street;
+          $project->postal_code=$request->postal_code;
+          $project->city=$request->city;
+
+          //customer's address
+          $project->cus_address=$request->cus_address;
+          $project->cus_postal_code=$request->cus_postal_code;
+          $project->cus_city=$request->cus_city;
         $project->start_date= $request->start_date;
         $project->end_date=$request->end_date;
+
         $project->save();
 
         return $this->responseSuccess($project);
@@ -344,6 +358,48 @@ class ProjectController extends Controller
             return $this->responseFail();
         }
     }
+
+    public function uploadProjectOfferPrice(Request $request, $project_id){
+        try{
+            $project = Project::find($project_id);
+            //dd($request->project_offer);
+            if (!empty($request->offer_with_price)) {
+                $doc_name = time().'.'.$request->offer_with_price->extension();
+                // dd($doc_name);
+                $request->offer_with_price->move(public_path('project_files'), $doc_name);
+                $project->offer_with_price = $doc_name;
+            }
+            $project->save();
+            $project->offer_with_price=asset('project_files/' . $project->offer_with_price);
+            return response()->json([
+                $project
+            ], 200);
+        }catch (\Exception $e)
+        {
+            return $this->responseFail();
+        }
+    }
+
+    public function uploadProjectContract(Request $request, $project_id){
+        try{
+            $project = Project::find($project_id);
+            //dd($request->project_offer);
+            if (!empty($request->contract)) {
+                $doc_name = time().'.'.$request->contract->extension();
+                // dd($doc_name);
+                $request->contract->move(public_path('project_files'), $doc_name);
+                $project->contract = $doc_name;
+            }
+            $project->save();
+            $project->contract=asset('project_files/' . $project->contract);
+            return response()->json([
+                $project
+            ], 200);
+        }catch (\Exception $e)
+        {
+            return $this->responseFail();
+        }
+    }
     public function uploadProjectDrawing(Request $request, $project_id){
         try{
             $project = Project::find($project_id);
@@ -398,6 +454,40 @@ class ProjectController extends Controller
             // dd($project_offer);
             return response()->json([
                 $project_offer
+            ], 200);
+        }catch (\Exception $e)
+        {
+            return $this->responseFail();
+        }
+    }
+
+    //get project offer for client
+    public function getProjectOfferPriceClient(Request $request, $id){
+        try{
+            $name = Project::where('customer_id', $id)->get();
+            //  dd($name);
+            $name = $name[0]->offer_with_price;
+            $offer_with_price  =asset('project_files/' .$name);
+            // dd($project_offer);
+            return response()->json([
+                $offer_with_price
+            ], 200);
+        }catch (\Exception $e)
+        {
+            return $this->responseFail();
+        }
+    }
+
+    //get project offer for client
+    public function getProjectContractClient(Request $request, $id){
+        try{
+            $name = Project::where('customer_id', $id)->get();
+            //  dd($name);
+            $name = $name[0]->contract;
+            $contract  =asset('project_files/' .$name);
+            // dd($project_offer);
+            return response()->json([
+                $contract
             ], 200);
         }catch (\Exception $e)
         {
@@ -480,6 +570,28 @@ class ProjectController extends Controller
        // dd($project_offer);
         return response()->json([
             $project_offer
+        ], 200);
+    }
+
+    //get project files
+    public function getProjectOfferPrice(Request $request, $id){
+        $name = Project::find($id);
+        $name = $name->offer_with_price;
+        $offer_with_price  =asset('project_files/' .$name);
+       // dd($project_offer);
+        return response()->json([
+            $offer_with_price
+        ], 200);
+    }
+
+    //get project files
+    public function getProjectContract(Request $request, $id){
+        $name = Project::find($id);
+        $name = $name->contract;
+        $contract  =asset('project_files/' .$name);
+       // dd($project_offer);
+        return response()->json([
+            $contract
         ], 200);
     }
 
@@ -898,7 +1010,29 @@ class ProjectController extends Controller
                 $employee_ids[]=$task->employee_id;
             }
 
-            $employees=User::whereNotIn('id', $employee_ids)->where('user_type',3)->where('by_company', $by_company)->get();
+            $employees=User::whereNotIn('id', $employee_ids)->where('user_type',5)->where('by_company', $by_company)->get();
+            $img_path=asset('user_images/');
+            foreach ($employees as $key => $value) {
+                $value->img=$img_path.'/'.$value->img;
+            }
+            return $this->responseSuccess($employees);
+        }catch (\Exception $e)
+        {
+            return $this->responseFail();
+        }
+    }
+
+    public function employeeForThisCompany(Request $request, $company){
+        try
+        {
+            $users = User::where('by_company', $company)->get();
+
+            $employee_ids=[];
+            foreach ($users as $key => $task) {
+                $employee_ids[]=$task->id;
+            }
+
+            $employees=User::whereIn('id', $employee_ids)->where('user_type',5)->where('by_company', $company)->get();
             $img_path=asset('user_images/');
             foreach ($employees as $key => $value) {
                 $value->img=$img_path.'/'.$value->img;
@@ -971,13 +1105,18 @@ class ProjectController extends Controller
         $img_path=asset('user_images/');
         $pin_status=0;
         foreach ($projects as $key => $value) {
-          $employee=[];
-          foreach ($value->tasks as $key => $value1) {
-            if(isset($value1->employee->img)){
-              $value1->employee->img=$img_path.'/'.$value1->employee->img;
+            $employee=[];
+            foreach ($value->tasks as $key => $value1) {
+                if(isset($value1->employee->img)){
+                    $value1->employee->img=$img_path.'/'.$value1->employee->img;
+                }
+                if (in_array($value1->employee, $employee)) {
+
+                }else{
+                    $employee[] = $value1->employee;
+                }
+
             }
-            $employee[]=$value1->employee;
-          }
           $customer_pined_project=Pinproject::where('user_id', $customer_id)->where('project_id',$value->id)->first();
           if(isset($customer_pined_project->id)){
             $value->pin_status=1;

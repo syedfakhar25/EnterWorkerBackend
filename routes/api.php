@@ -68,13 +68,28 @@ Route::group(['prefix'=>'admin'],function(){
     //routes related to adding project company team in a Project
     Route::resource('company-team', \App\Http\Controllers\API\CompanyTeamController::class);
     Route::get('get-company-team/{id}', [\App\Http\Controllers\API\CompanyTeamController::class, 'getCompanyTeam']);
+    //company team with company id
+    Route::get('team-for-company/{id}', [\App\Http\Controllers\API\CompanyTeamController::class, 'TeamForCompany']);
+
     //add project documents
     Route::post('upload-project-offer/{id}', [ProjectController::class, 'uploadProjectOffer']);
     Route::get('get-project-offer/{id}', [ProjectController::class, 'getProjectOffer']);
     Route::get('get-project-offer-client/{id}', [ProjectController::class, 'getProjectOfferClient']);
+
     Route::post('upload-project-drawing/{id}', [ProjectController::class, 'uploadProjectDrawing']);
     Route::get('get-project-drawing/{id}', [ProjectController::class, 'getProjectDrawing']);
     Route::get('get-project-drawing-client/{id}', [ProjectController::class, 'getProjectDrawingClient']);
+
+    Route::post('upload-project-offer-price/{id}', [ProjectController::class, 'uploadProjectOfferPrice']);
+    Route::get('get-project-offer-price/{id}', [ProjectController::class, 'getProjectOfferPrice']);
+    Route::get('get-project-offer-price-client/{id}', [ProjectController::class, 'getProjectOfferPriceClient']);
+
+    Route::post('upload-project-contract/{id}', [ProjectController::class, 'uploadProjectContract']);
+    Route::get('get-project-contract/{id}', [ProjectController::class, 'getProjectContract']);
+    Route::get('get-project-contract-client/{id}', [ProjectController::class, 'getProjectContractClient']);
+
+
+
     //offer and drawing comments by customer
     Route::post('offer-comment/{id}', [ProjectController::class, 'OfferComment']);
     Route::post('drawing-comment/{id}', [ProjectController::class, 'DrawingComment']);
@@ -169,6 +184,7 @@ Route::post('/pin-project', [ProjectController::class,'pinProject'])->name('pin.
 Route::get('/get-user-pin-project/{user_id}', [ProjectController::class,'getUserPinProject'])->name('get.user.pin.project');
 Route::get('/employee-for-project/{project_id}', [ProjectController::class,'employeeForProject'])->name('demployee.for.project');
 Route::get('/employee-for-company/{project_id}', [ProjectController::class,'employeeForCompany']);
+Route::get('/employee-for-this-company/{project_id}', [ProjectController::class,'employeeForThisCompany']);
 Route::post('/employee-tasks', [TaskController::class,'getEmployeeTasks'])->name('get.employee.tasks');
 
 //these are companies to show in a project

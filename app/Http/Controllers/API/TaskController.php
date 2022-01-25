@@ -78,6 +78,7 @@ class TaskController extends Controller
             $task->is_important=$request->is_important;
            // $task->active=$request->active;
             $task->deadline=$request->deadline;
+            $task->company_worker=$request->company_worker;
             $task->save();
            // dd($task);
             $calenderevent= new Calenderevent();
@@ -151,6 +152,7 @@ class TaskController extends Controller
             $task->is_important=$request->is_important;
             //$task->active=$request->active;
             $task->deadline=$request->deadline;
+            $task->company_worker=$request->company_worker;
             $task->save();
             $calenderevent=Calenderevent::where('task_id',$task->id)->first();
             if(!empty($calenderevent)){

@@ -26,9 +26,19 @@ class CreateProjectsTable extends Migration
             $table->text('offer_comment')->nullable();
             $table->text('drawing_comment')->nullable();
             $table->text('project_drawing')->nullable();
+            $table->text('offer_with_price')->nullable();
+            $table->text('contract')->nullable();
+
+            //project actual address
             $table->string('street')->nullable();
             $table->string('postal_code')->nullable();
             $table->string('city')->nullable();
+
+            //customer address fields in project
+            $table->string('cus_address')->nullable();
+            $table->string('cus_postal_code')->nullable();
+            $table->string('cus_city')->nullable();
+
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
             $table->integer('status')->nullable();
