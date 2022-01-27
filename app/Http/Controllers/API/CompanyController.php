@@ -109,7 +109,7 @@ class CompanyController extends Controller
                 $imageName = time() . '.' . $request->image->extension();
                 $request->image->move(public_path('company_images'), $imageName);
                 $company->image = $imageName;
-                $user->img = 'dummy_image.png';
+                $user->img = $imageName;
             }else{
                 $company->image = 'dummy_image.png';
                 $user->img = 'dummy_image.png';
@@ -219,6 +219,7 @@ class CompanyController extends Controller
                 $imageName = time().'.'.'png';
                 \File::put(public_path('company_images/').$imageName, base64_decode($file_data));
                 $company->image = $imageName;
+                $user->img = $imageName;
             }
 
             $company->save();
