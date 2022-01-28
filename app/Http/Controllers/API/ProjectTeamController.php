@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Designation;
 use App\Models\Project;
+use App\Models\ProjectManager;
 use App\Models\ProjectTeam;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -42,11 +43,14 @@ class ProjectTeamController extends Controller
     public function store(Request $request)
     {
         try{
-            $project_team = new ProjectTeam();
-            $project_team->project_id = $request->project_id;
-            $project_team->employee_id = $request->employee_id;
-            $project_team->save();
-
+            $employees= $request->employee_id;
+            foreach($employees as $key=>$value){
+                $project_team = new ProjectTeam();
+                $project_team->project_id = $request->project_id;
+                $project_team->employee_id = $value;
+                $project_team->save();
+            }
+            $project_team = ProjectTeam::where('project_id', $request->project_id)->get();
             return response()->json([
                 $project_team
             ], 200);
@@ -61,8 +65,8 @@ class ProjectTeamController extends Controller
         try{
             //dd($project_id);
             $team_members = ProjectTeam::where('project_id', $project_id)->get();
-            $manager_id = Project::select('manager_id')->where('id', $project_id)->get();
-
+            $manager_id = ProjectManager::select('manager_id')->where('project_id', $project_id)->get();
+            //dd($manager_id);
             if($manager_id[0]->manager_id != NULL){
                 $manager = User::find($manager_id);
                 $m_id = $manager[0]->id;

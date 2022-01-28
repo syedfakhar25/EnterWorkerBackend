@@ -235,28 +235,19 @@ class ProjectController extends Controller
 
     //assign project manager to a project
     public function addProjectManager(Request $request, $pid){
-        //dd($request->all());
-            /*$manager_ids = Project::select('id', 'manager_id')->get();
-            //dd($manager_ids);
-            foreach ($manager_ids as $mm){
-                $project_manager = new ProjectManager();
-                $project_manager->project_id = $mm->id;
-                $project_manager->manager_id = $mm->manager_id;
-                $project_manager->save();
-            }*/
         try{
-            $project_manager = new ProjectManager();
-            $project_manager->project_id = $pid;
-            $project_manager->manager_id = $request->manager_id;
-            $project_manager->save();
-            //dd($pid);
+            $managers= $request->manager_id;
+            foreach($managers as $key=>$value){
+                $project_manager = new ProjectManager();
+                $project_manager->project_id = $pid;
+                $project_manager->manager_id = $value;
+                $project_manager->save();
+            }
+
             $project = Project::find($pid);
-            /*$project  = Project::find($pid);
-            $project->manager_id = $request->manager_id;
-            $project->save();*/
+            $project_manager = ProjectManager::where('project_id', $pid)->get();
             return response()->json([
                 $project,
-                $project_manager
             ], 200);
         }catch (\Exception $e)
         {
@@ -294,12 +285,15 @@ class ProjectController extends Controller
     //assign company worker to a project
     public function addCompanyWorker(Request $request, $pid){
         try{
-            $company_workers = new PorjectCompanyWorker();
-            $company_workers->project_id = $pid;
-            $company_workers->company_worker_id = $request->company_worker_id;
-            $company_workers->save();
-
+            $company_workers= $request->company_worker_id;
+            foreach($company_workers as $key=>$value){
+                $company_worker = new PorjectCompanyWorker();
+                $company_worker->project_id = $pid;
+                $company_worker->company_worker_id = $value;
+                $company_worker->save();
+            }
             $project = Project::find($pid);
+            $company_workers = PorjectCompanyWorker::where('project_id', $pid)->get();
             return response()->json([
                 $project,
                 $company_workers
@@ -312,7 +306,7 @@ class ProjectController extends Controller
 
     public function getProjectsCompanyWorker(Request $request, $id){
         try{
-            $company_workers = PorjectCompanyWorker::select('company_worker_id')->where('project_id', $id)->get();
+            $company_workers = PorjectCompanyWorker::select('company_worker_id')->where('project_id', $id    )->get();
 
             $managers= array();
             foreach ($company_workers as $team){

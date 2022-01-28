@@ -41,11 +41,15 @@ class CompanyTeamController extends Controller
     public function store(Request $request)
     {
         try{
-            $company_team = new CompanyTeam();
-            $company_team->project_id = $request->project_id;
-            $company_team->employee_id = $request->employee_id;
-            $company_team->save();
+            $employees= $request->employee_id;
 
+            foreach($employees as $key=>$value){
+                $company_team = new CompanyTeam();
+                $company_team->project_id = $request->project_id;
+                $company_team->employee_id = $value;
+                $company_team->save();
+            }
+            $company_team = CompanyTeam::where('project_id', $request->project_id)->get();
             return response()->json([
                 $company_team
             ], 200);
