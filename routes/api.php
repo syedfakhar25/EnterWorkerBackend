@@ -112,6 +112,23 @@ Route::group(['prefix'=>'admin'],function(){
     //routes for Designations CRUD
     Route::resource('designations', \App\Http\Controllers\DesignationController::class);
 
+    //routes for templates , steps, tasks
+    Route::post('/add-template', [\App\Http\Controllers\API\TemplateController::class, 'addTemplate']);
+    Route::put('/edit-template/{id}', [\App\Http\Controllers\API\TemplateController::class, 'updateTemplate']);
+    Route::get('/get-template/{id}', [\App\Http\Controllers\API\TemplateController::class, 'getTemplate']);
+    Route::delete('/delete-template/{id}', [\App\Http\Controllers\API\TemplateController::class, 'destroyTemplate']);
+
+    Route::post('/add-temp-step', [\App\Http\Controllers\API\TemplateController::class, 'addTempStep']);
+    Route::delete('/delete-temp-step/{id}', [\App\Http\Controllers\API\TemplateController::class, 'destroyTempStep']);
+
+    Route::post('/add-temp-task', [\App\Http\Controllers\API\TemplateController::class, 'addTempTask']);
+    Route::put('/edit-temp-task/{id}', [\App\Http\Controllers\API\TemplateController::class, 'updateTempTask']);
+    Route::delete('/delete-temp-task/{id}', [\App\Http\Controllers\API\TemplateController::class, 'destroyTempTask']);
+
+    Route::get('/all-templates', [\App\Http\Controllers\API\TemplateController::class, 'showTemplates']);
+
+    //adding a template in project
+    Route::post('add-template-in-project/{id}', [\App\Http\Controllers\API\TemplateController::class, 'addTemplateinProject']);
     });
 
 
