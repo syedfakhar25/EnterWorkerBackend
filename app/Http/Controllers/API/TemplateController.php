@@ -139,14 +139,14 @@ class TemplateController extends Controller
         $step=TemplateStep::find($id);
         $step_order = $step->step_order;
         $template_id = $step->template_id;
-        /*if(!empty($step)){
-            $tasks = Task::where('step_id', $id)->get();
+        if(!empty($step)){
+            $tasks = TemplateTask::where('step_id', $id)->get();
             if ($tasks->isNotEmpty()){
                 foreach ($tasks as $task){
                     $task->delete();
                 }
             }
-        }*/
+        }
         $step->delete();
 
         //reset step order

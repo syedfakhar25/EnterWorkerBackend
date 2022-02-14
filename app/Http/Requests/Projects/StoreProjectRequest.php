@@ -31,6 +31,9 @@ class StoreProjectRequest extends FormRequest
             'street' => ['required', 'string'],
             'postal_code' => ['required', 'string'],
             'city' => ['required', 'string'],
+            'cus_address' => ['required', 'string'],
+            'cus_postal_code' => ['required', 'string'],
+            'cus_city' => ['required', 'string'],
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date'],
         ];
