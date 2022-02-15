@@ -19,6 +19,7 @@ class CreateStepsTable extends Migration
             $table->boolean('task_status')->default(0);
             $table->boolean('active')->default(0);
             $table->boolean('company_worker')->default(0);
+            $table->bigInteger('percentage')->nullable();
             $table->bigInteger('step_order')->nullable();
             $table->timestamps();
         });

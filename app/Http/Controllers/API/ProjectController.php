@@ -135,10 +135,26 @@ class ProjectController extends Controller
     {
       try
       {
-
         $img_path=asset('user_images/');
         $project=Project::with('customer','manager', 'tasks', 'company_worker')->where('id',$project)->first();
 
+        //checking percentage of project w.r.t steps' percentage
+          $project_percentage = 0;
+          $steps = Step::where('project_id', $project->id)->get();
+          foreach( $steps as $step){
+              $tasks = Task::where('step_id', $step->id)->get();
+              $total_tasks = $tasks->count();
+              $task_percentage =($step->percentage/$total_tasks);
+              foreach($tasks as $task){
+                  if($task->task_status==2){
+                      $project_percentage+=$task_percentage;
+                  }
+              }
+          }
+          $project_percentage = intval($project_percentage);
+          $project->percentage = $project_percentage;
+          $project->save();
+          ///////////////////////////////////////////////////////
         if( !empty($project->customer))
         $project->customer->img=$img_path.'/'.$project->customer->img;
         if( !empty($project->manager))

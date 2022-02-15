@@ -207,6 +207,7 @@ class StepController extends Controller
             $step->active=$request->active;
             $step->step_order=$request->step_order;
             $step->company_worker=$request->company_worker;
+            $step->percentage=$request->percentage;
             //dd($step);
             $step->save();
 
@@ -240,6 +241,7 @@ class StepController extends Controller
                     $snext->save();
                 }
             }
+
             ///////////////////////////
             $step= new Step();
             $step->project_id=$request->project_id;
@@ -247,6 +249,8 @@ class StepController extends Controller
             $step->active=$request->active;
             $step->step_order=$request->step_order;
             $step->company_worker=$request->company_worker;
+            $step->percentage=$request->percentage;
+
             $step->save();
            // dd($step);
 
@@ -301,6 +305,7 @@ class StepController extends Controller
             $step->active=$request->active;
             $step->step_order=$request->step_order;
             $step->company_worker=$request->company_worker;
+            $step->percentage=$request->percentage;
           // dd($step);
             $step->save();
 
