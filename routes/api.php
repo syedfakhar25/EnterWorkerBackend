@@ -172,7 +172,7 @@ Route::group(['prefix'=>'employee'],function(){
     Route::get('dashboard/{employee_id}', [DashboardController::class,'employeeDashboard'])->name('employee.dashboard');
     Route::get('total-tasks/{employee_id}', [TaskController::class,'employeeTotalTasks'])->name('employee.total.tasks');
     Route::get('completed-tasks/{employee_id}', [TaskController::class,'employeeCompletedTasks'])->name('employee.completed.tasks');
-    Route::get('ongoing-tasks/{employee_id}', [TaskController::class,'employeeOngoingTasks'])->name('employee.ongoing.tasks');
+    Route::get('ongoing-tasks/{employee_id}', [TaskController::class,'emplo yeeOngoingTasks'])->name('employee.ongoing.tasks');
     Route::get('project_details/{project_id}', [ProjectController::class,'employeeProjectDetails'])->name('employee.project.details');
     Route::get('events/{employee_id}', [CalendereventController::class,'employeeEvents'])->name('employee.events');
     Route::post('/event-notification', [CalendereventController::class,'employeeEventNotification'])->name('employee.event.notification');

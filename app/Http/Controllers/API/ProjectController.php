@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\Company;
 use App\Models\CompanyTeam;
 use App\Models\ExtraWork;
 use App\Models\OrderDetail;
@@ -322,23 +323,18 @@ class ProjectController extends Controller
 
     public function getProjectsCompanyWorker(Request $request, $id){
         try{
-            $company_workers = PorjectCompanyWorker::select('company_worker_id')->where('project_id', $id    )->get();
+            $project_c_workers = PorjectCompanyWorker::where('project_id', $id    )->get();
 
-            $managers= array();
-            foreach ($company_workers as $team){
-                $managers[]= $team->company_worker_id;
+            $company_ids= array();
+            foreach ($project_c_workers as $cw){
+                $company_ids[] = $cw->company_worker_id;
             }
-            //dd($managers);
-            $managers_id[0] = implode(',', $managers);
-            $company_workers = \Illuminate\Support\Facades\DB::select(DB::raw("select  * from companies where id IN ($managers_id[0])"));
-
+            $company_workers = Company::whereIn('id', $company_ids)->get();
             foreach ($company_workers as $end){
                 $end->image=asset('company_images/' . $end->image);
             }
-            $company_workers = $company_workers;
             return response()->json([
                 $company_workers
-
             ], 200);
         }catch (\Exception $e)
         {
@@ -998,7 +994,15 @@ class ProjectController extends Controller
         foreach ($team as $key => $task) {
           $employee_ids[]=$task->employee_id;
         }
-        $employees=User::whereNotIn('id', $employee_ids)->where('user_type',3)->get();
+        /*$employees=User::whereNotIn('id', $employee_ids)->where('user_type',3)
+                        ->orwhere('by_company' ,'=', NULL)->orwhere('by_company' ,'=', 0)->get();*/
+        $employees=DB::table('users')
+            ->orWhere(function($query) {
+                $query->where('by_company','null')
+                    ->orWhere('by_company',0);
+            })
+            ->where('user_type',3)
+            ->whereNotIn('id',$employee_ids)->get();
         $img_path=asset('user_images/');
         foreach ($employees as $key => $value) {
           $value->img=$img_path.'/'.$value->img;

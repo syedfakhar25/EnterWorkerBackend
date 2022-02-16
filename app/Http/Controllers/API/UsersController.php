@@ -40,7 +40,7 @@ class UsersController extends Controller
     public function userEmployees(Request $request){
         //dd('sjdb');
         $employees = DB::select(DB::raw("select  users.*, designations.designation_name from users join designations
-                            on (users.designation_id = designations.id);"));
+                            on (users.designation_id = designations.id) where users.user_type = 3 and (users.by_company=NULL or users.by_company=0);"));
         foreach ($employees as $emp){
             $emp->img =  asset('user_images/' . $emp->img);
             if($emp->manager_type == 1){

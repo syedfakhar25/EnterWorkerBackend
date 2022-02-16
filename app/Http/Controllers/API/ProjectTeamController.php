@@ -67,7 +67,7 @@ class ProjectTeamController extends Controller
             $team_members = ProjectTeam::where('project_id', $project_id)->get();
             $manager_id = ProjectManager::select('manager_id')->where('project_id', $project_id)->get();
             //dd($manager_id);
-            if($manager_id[0]->manager_id != NULL){
+            if(count($manager_id)>0){
                 $manager = User::find($manager_id);
                 $m_id = $manager[0]->id;
                 $manager_name_designation =DB::select(DB::raw("select  users.id as manager_id, users.first_name,users.last_name, users.img, designations.designation_name from users
