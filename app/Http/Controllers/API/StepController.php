@@ -296,15 +296,7 @@ class StepController extends Controller
     public function update(Request $request, Step $step)
     {
         try{
-           // dd('dd');
-            //$step= Step::where('id', $id)->get();
-            //dd($step);
-         //   dd($request->all());
             $step->project_id=$request->project_id;
-            $step->task_status=$request->task_status;
-            $step->active=$request->active;
-            $step->step_order=$request->step_order;
-            $step->company_worker=$request->company_worker;
             $step->percentage=$request->percentage;
           // dd($step);
             $step->save();

@@ -42,6 +42,8 @@ Route::group(['prefix'=>'auth'],function(){
 
 Route::group(['prefix'=>'admin'],function(){
     Route::resource('projects', ProjectController::class);
+    Route::put('submit/{id}', [App\Http\Controllers\API\ProjectController::class, 'SubmitProject']);
+    Route::put('project-percentage/{id}', [App\Http\Controllers\API\ProjectController::class, 'ProjectPercentage']);
     Route::resource('company', \App\Http\Controllers\API\CompanyController::class);
     Route::resource('users', UsersController::class);
     Route::get('dashboard/{id}', [DashboardController::class,'adminDashboard'])->name('admin.dashboard');
@@ -145,6 +147,11 @@ Route::group(['prefix'=>'manager'],function(){
     Route::resource('steps', \App\Http\Controllers\API\StepController::class);
     Route::get('get-steps/{id}',  [\App\Http\Controllers\API\StepController::class,'getSteps']);
     Route::put('/add-manager/{id}', [ProjectController::class,'addProjectManager']);
+    Route::delete('remove-manager/{id}', [ProjectController::class, 'removeManager']);
+    Route::delete('remove-company/{id}', [ProjectController::class, 'removeCompany']);
+    Route::delete('remove-team-member/{id}', [ProjectController::class, 'removeTeamMember']);
+
+
     Route::post('/assign-company-worker/{id}', [ProjectController::class,'addCompanyWorker']);
     Route::get('/get-projects_company-workers/{id}', [ProjectController::class,'getProjectsCompanyWorker']);
 
@@ -199,12 +206,14 @@ Route::get('/all-company-workers', [UsersController::class,'getallCompanyEmploye
 Route::post('/update-task-status', [TaskController::class,'updateTaskStatus'])->name('update.task.status');
 Route::post('/pin-project', [ProjectController::class,'pinProject'])->name('pin.project');
 Route::get('/get-user-pin-project/{user_id}', [ProjectController::class,'getUserPinProject'])->name('get.user.pin.project');
-Route::get('/employee-for-project/{project_id}', [ProjectController::class,'employeeForProject'])->name('demployee.for.project');
+Route::get('/employee-for-project/{project_id}', [ProjectController::class,'employeeForProject'])->name('employee.for.project');
+Route::get('manager-for-project/{project_id}', [ProjectController::class, 'managerForProject']);
 Route::get('/employee-for-company/{project_id}', [ProjectController::class,'employeeForCompany']);
 Route::get('/employee-for-this-company/{project_id}', [ProjectController::class,'employeeForThisCompany']);
 Route::post('/employee-tasks', [TaskController::class,'getEmployeeTasks'])->name('get.employee.tasks');
 
 //these are companies to show in a project
 Route::get('company-for-project/{project_id}', [\App\Http\Controllers\API\CompanyController::class, 'companyForProject']);
+
 
 // chat section

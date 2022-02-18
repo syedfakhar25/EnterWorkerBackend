@@ -74,6 +74,13 @@ class TemplateController extends Controller
     public function destroyTemplate($id){
         try{
             $template = Template::find($id);
+
+            //delete templates steps
+                $steps = TemplateStep::where('template_id', $id)->get();
+                //dd($steps);
+                foreach ($steps as $step){
+                    $this->destroyTempStep($step->id);
+                }
             $template->delete();
             return response()->json([
                 'deleted'
@@ -139,14 +146,10 @@ class TemplateController extends Controller
         $step=TemplateStep::find($id);
         $step_order = $step->step_order;
         $template_id = $step->template_id;
-        /*if(!empty($step)){
-            $tasks = Task::where('step_id', $id)->get();
-            if ($tasks->isNotEmpty()){
-                foreach ($tasks as $task){
-                    $task->delete();
-                }
-            }
-        }*/
+        $tasks = Task::where('step_id', $id)->get();
+        foreach ($tasks as $task){
+            $this->destroyTempTask($task->id);
+        }
         $step->delete();
 
         //reset step order

@@ -43,6 +43,7 @@ class CreateProjectsTable extends Migration
             $table->date('end_date')->nullable();
             $table->integer('status')->nullable();
             $table->bigInteger('percentage')->nullable();
+            $table->boolean('submit')->nullable();
             $table->timestamps();
         });
     }
