@@ -1659,9 +1659,7 @@ class ProjectController extends Controller
             ///////////////////////////
             $project->save();
             return $this->responseSuccess(
-                [
-                    'percentage' => $project_percentage
-                ]
+                $project_percentage
             );
         } catch (\Exception $e) {
             return $this->responseFail();

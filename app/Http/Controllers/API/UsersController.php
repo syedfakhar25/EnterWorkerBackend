@@ -324,7 +324,7 @@ class UsersController extends Controller
             $customers=User::where('user_type',4)->get();
                $img_path=asset('user_images/');
                foreach ($customers as $key => $value) {
-                   $value->img=$img_path.'/'.$value->image;
+                   $value->img=$img_path.'/'.$value->img;
                }
             //dd($customers);
             return $this->responseSuccess($customers);
@@ -337,8 +337,11 @@ class UsersController extends Controller
     {
         try
            {
-            $managers=new UsersCollection(User::where('user_type',2)->get());
-               $img_path=asset('user_images/');
+            $managers=User::where('user_type',2)->get();
+            $img_path=asset('user_images/');
+           foreach ($managers as $key => $value) {
+               $value->img=$img_path.'/'.$value->img;
+           }
             return $this->responseSuccess($managers);
         }catch (\Exception $e)
         {
