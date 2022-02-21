@@ -137,24 +137,9 @@ class ProjectController extends Controller
         try
         {
             $img_path=asset('user_images/');
+            $files_path = asset('project_files/');
             $project=Project::with('customer','manager', 'tasks', 'company_worker')->where('id',$project)->first();
 
-            //checking percentage of project w.r.t steps' percentage
-            $project_percentage = 0;
-            $steps = Step::where('project_id', $project->id)->get();
-            foreach( $steps as $step){
-                $tasks = Task::where('step_id', $step->id)->get();
-                $total_tasks = $tasks->count();
-                $task_percentage =($step->percentage/$total_tasks);
-                foreach($tasks as $task){
-                    if($task->task_status==2){
-                        $project_percentage+=$task_percentage;
-                    }
-                }
-            }
-            $project_percentage = intval($project_percentage);
-            $project->percentage = $project_percentage;
-            $project->save();
             ///////////////////////////////////////////////////////
             if( !empty($project->customer))
                 $project->customer->img=$img_path.'/'.$project->customer->img;
@@ -164,6 +149,18 @@ class ProjectController extends Controller
                 $project->company_worker->img=$img_path.'/'.$project->company_worker->img;
             //  $project->progress=$project->tasks()->where('task_status',1)->sum('percentage');
 
+            if(!empty($project->project_offer)){
+                $project->project_offer=$files_path.'/'.$project->project_offer;
+            }
+            if(!empty($project->project_drawing)){
+                $project->project_drawing=$files_path.'/'.$project->project_drawing;
+            }
+            if(!empty($project->offer_with_price)){
+                $project->offer_with_price=$files_path.'/'.$project->offer_with_price;
+            }
+            if(!empty($project->contract)){
+                $project->contract=$files_path.'/'.$project->contract;
+            }
             $employee=[];
             foreach ($project->tasks as $key => $value1) {
                 if (isset($value1->employee->img)) {
@@ -172,6 +169,7 @@ class ProjectController extends Controller
 
                 $employee[]=$value1->employee;
             }
+
             $project->employee=$employee;
             foreach ($project->employee as $key => $value) {
                 $employee_total_tasks=Task::where('project_id',$project->id)->where('employee_id',$value->id)->count();
@@ -191,6 +189,7 @@ class ProjectController extends Controller
                 $project_employees[]=$value;
             }
             $project->employee=$project_employees;
+
             return $this->responseSuccess($project);
         }catch (\Exception $e)
         {
@@ -312,7 +311,7 @@ class ProjectController extends Controller
     }
 
     //get all managers of Projects
-    public function getProjectManagers(Request $request, $id){
+    public function getProjectManagers($id){
         try{
             $project_managers = ProjectManager::select('manager_id')->where('project_id', $id)->get();
             if(count($project_managers)>0){
@@ -322,7 +321,7 @@ class ProjectController extends Controller
                 }
                 //dd($managers);
                 $managers_id[0] = implode(',', $managers);
-                $emp_name_designations = \Illuminate\Support\Facades\DB::select(DB::raw("select  users.id, users.first_name, users.last_name, users.img, designations.designation_name from users
+                $emp_name_designations = \Illuminate\Support\Facades\DB::select(DB::raw("select  users.id, users.first_name, users.last_name, users.img, users.manager_type, designations.designation_name from users
                       join designations on designations.id = users.designation_id where users.id IN ($managers_id[0])"));
                 foreach ($emp_name_designations as $end){
                     $end->img=asset('user_images/' . $end->img);
@@ -1036,15 +1035,15 @@ class ProjectController extends Controller
             foreach ($team as $key => $task) {
                 $employee_ids[]=$task->employee_id;
             }
-            /*$employees=User::whereNotIn('id', $employee_ids)->where('user_type',3)
-                            ->orwhere('by_company' ,'=', NULL)->orwhere('by_company' ,'=', 0)->get();*/
-            $employees=DB::table('users')
+            $employees=User::whereNotIn('id', $employee_ids)->where('user_type',3)
+                            ->where('by_company' ,'=', NULL);
+            /*$employees=DB::table('users')
                 ->orWhere(function($query) {
                     $query->where('by_company','null')
                         ->orWhere('by_company',0);
                 })
                 ->where('user_type',3)
-                ->whereNotIn('id',$employee_ids)->get();
+                ->whereNotIn('id',$employee_ids)->get();*/
             $img_path=asset('user_images/');
             foreach ($employees as $key => $value) {
                 $value->img=$img_path.'/'.$value->img;
@@ -1070,6 +1069,56 @@ class ProjectController extends Controller
                 $value->img=$img_path.'/'.$value->img;
             }
             return $this->responseSuccess($managers);
+        }catch (\Exception $e)
+        {
+            return $this->responseFail();
+        }
+    }
+
+    public function allUsersForProject($project_id){
+        try
+        {
+            // team of project
+            $team_members = ProjectTeam::where('project_id', $project_id)->get();
+            if(count($team_members)>0){
+                $employees= array();
+                foreach ($team_members as $team){
+                    $employees[]= $team->employee_id;
+                }
+                $employees_id= array();
+                $employees_id[0] = implode(',', $employees);
+                $emp =DB::select(DB::raw("select  users.id, users.first_name, users.last_name, users.img, designations.designation_name from users
+                      join designations on designations.id = users.designation_id where users.id IN ($employees_id[0])"));
+            }else{
+                $emp = '';
+            }
+
+            //managers of project
+            $managers = $this->getProjectManagers($project_id);
+
+            //companies
+            $project_c_workers = PorjectCompanyWorker::where('project_id', $project_id)->get();
+            if(count($project_c_workers)>0){
+                $company_ids= array();
+                foreach ($project_c_workers as $cw){
+                    $company_ids[] = $cw->company_worker_id;
+                }
+                $company_workers = Company::whereIn('id', $company_ids)->get();
+                foreach ($company_workers as $end){
+                    $end->image=asset('company_images/' . $end->image);
+                }
+                $company = $company_workers;
+            }else{
+                $company = '';
+            }
+
+
+            $all_users = [
+                'employees' => $emp,
+                'managers' => $managers,
+                'company' => $company
+            ];
+            return $this->responseSuccess($all_users);
         }catch (\Exception $e)
         {
             return $this->responseFail();
@@ -1660,6 +1709,23 @@ class ProjectController extends Controller
             $project->save();
             return $this->responseSuccess(
                 $project_percentage
+            );
+        } catch (\Exception $e) {
+            return $this->responseFail();
+        }
+    }
+
+    public function CheckPercentage($id){
+        try{
+            $steps = Step::where('project_id', $id)->get();
+            $percentage = 0;
+            if(count($steps)>0){
+                foreach ($steps as $step){
+                    $percentage+= $step->percentage;
+                }
+            }
+            return $this->responseSuccess(
+                $percentage
             );
         } catch (\Exception $e) {
             return $this->responseFail();

@@ -233,7 +233,7 @@ public function updateTaskStatus(ChangeTaskStatusRequest $request){
             $total_tasks=Task::where('employee_id',$employee_id)->get();
             $projects = DB::select(DB::raw("select projects.*, concat (users.first_name,' ',users.last_name) as customer_name  from  tasks left join projects  on
                         (tasks.project_id = projects.id) left join users on (projects.customer_id = users.id)
-                         WHERE tasks.employee_id = $employee_id GROUP BY projects.id"));
+                         WHERE tasks.employee_id = $employee_id  and projects.submit = 1 GROUP BY projects.id"));
            $projects_status = Project::select('projects.id', 'projects.status')
                                 ->join('tasks', 'tasks.project_id', '=', 'projects.id')
                                 ->where('tasks.employee_id', $employee_id)

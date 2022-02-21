@@ -44,6 +44,7 @@ Route::group(['prefix'=>'admin'],function(){
     Route::resource('projects', ProjectController::class);
     Route::put('submit/{id}', [App\Http\Controllers\API\ProjectController::class, 'SubmitProject']);
     Route::put('project-percentage/{id}', [App\Http\Controllers\API\ProjectController::class, 'ProjectPercentage']);
+    Route::get('check-percentage/{id}', [App\Http\Controllers\API\ProjectController::class, 'CheckPercentage']);
     Route::resource('company', \App\Http\Controllers\API\CompanyController::class);
     Route::resource('users', UsersController::class);
     Route::get('dashboard/{id}', [DashboardController::class,'adminDashboard'])->name('admin.dashboard');
@@ -179,7 +180,7 @@ Route::group(['prefix'=>'employee'],function(){
     Route::get('dashboard/{employee_id}', [DashboardController::class,'employeeDashboard'])->name('employee.dashboard');
     Route::get('total-tasks/{employee_id}', [TaskController::class,'employeeTotalTasks'])->name('employee.total.tasks');
     Route::get('completed-tasks/{employee_id}', [TaskController::class,'employeeCompletedTasks'])->name('employee.completed.tasks');
-    Route::get('ongoing-tasks/{employee_id}', [TaskController::class,'emplo yeeOngoingTasks'])->name('employee.ongoing.tasks');
+    Route::get('ongoing-tasks/{employee_id}', [TaskController::class,'employeeOngoingTasks'])->name('employee.ongoing.tasks');
     Route::get('project_details/{project_id}', [ProjectController::class,'employeeProjectDetails'])->name('employee.project.details');
     Route::get('events/{employee_id}', [CalendereventController::class,'employeeEvents'])->name('employee.events');
     Route::post('/event-notification', [CalendereventController::class,'employeeEventNotification'])->name('employee.event.notification');
@@ -209,6 +210,10 @@ Route::get('/get-user-pin-project/{user_id}', [ProjectController::class,'getUser
 Route::get('/employee-for-project/{project_id}', [ProjectController::class,'employeeForProject'])->name('employee.for.project');
 Route::get('manager-for-project/{project_id}', [ProjectController::class, 'managerForProject']);
 Route::get('/employee-for-company/{project_id}', [ProjectController::class,'employeeForCompany']);
+
+//this api gets managers, company, employee collectively for a project
+Route::get('/all-users-for-project/{project_id}', [ProjectController::class,'allUsersForProject']);
+
 Route::get('/employee-for-this-company/{project_id}', [ProjectController::class,'employeeForThisCompany']);
 Route::post('/employee-tasks', [TaskController::class,'getEmployeeTasks'])->name('get.employee.tasks');
 
