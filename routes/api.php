@@ -44,7 +44,7 @@ Route::group(['prefix'=>'admin'],function(){
     Route::resource('projects', ProjectController::class);
     Route::put('submit/{id}', [App\Http\Controllers\API\ProjectController::class, 'SubmitProject']);
     Route::put('project-percentage/{id}', [App\Http\Controllers\API\ProjectController::class, 'ProjectPercentage']);
-    Route::get('check-percentage/{id}', [App\Http\Controllers\API\ProjectController::class, 'CheckPercentage']);
+    Route::put('check-percentage/{id}', [App\Http\Controllers\API\ProjectController::class, 'CheckPercentage']);
     Route::resource('company', \App\Http\Controllers\API\CompanyController::class);
     Route::resource('users', UsersController::class);
     Route::get('dashboard/{id}', [DashboardController::class,'adminDashboard'])->name('admin.dashboard');
@@ -118,10 +118,12 @@ Route::group(['prefix'=>'admin'],function(){
     //routes for templates , steps, tasks
     Route::post('/add-template', [\App\Http\Controllers\API\TemplateController::class, 'addTemplate']);
     Route::put('/edit-template/{id}', [\App\Http\Controllers\API\TemplateController::class, 'updateTemplate']);
+    Route::put('/submit-template/{id}', [\App\Http\Controllers\API\TemplateController::class, 'submitTemplate']);
     Route::get('/get-template/{id}', [\App\Http\Controllers\API\TemplateController::class, 'getTemplate']);
     Route::delete('/delete-template/{id}', [\App\Http\Controllers\API\TemplateController::class, 'destroyTemplate']);
 
     Route::post('/add-temp-step', [\App\Http\Controllers\API\TemplateController::class, 'addTempStep']);
+    Route::get('/get-temp-step/{id}', [\App\Http\Controllers\API\TemplateController::class, 'getTempSteps']);
     Route::delete('/delete-temp-step/{id}', [\App\Http\Controllers\API\TemplateController::class, 'destroyTempStep']);
 
     Route::post('/add-temp-task', [\App\Http\Controllers\API\TemplateController::class, 'addTempTask']);

@@ -1715,15 +1715,21 @@ class ProjectController extends Controller
         }
     }
 
-    public function CheckPercentage($id){
+    public function CheckPercentage(Request $request, $id){
         try{
             $steps = Step::where('project_id', $id)->get();
+            $current_step = Step::find($request->id);
+            $current_step_percentage = $current_step->percentage;
             $percentage = 0;
             if(count($steps)>0){
                 foreach ($steps as $step){
                     $percentage+= $step->percentage;
                 }
             }
+            if($current_step_percentage > 0){
+                $percentage = $percentage - $current_step_percentage;
+            }
+
             return $this->responseSuccess(
                 $percentage
             );

@@ -9,6 +9,7 @@ use App\Models\Template;
 use App\Models\TemplateStep;
 use App\Models\TemplateTask;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class TemplateController extends Controller
 {
@@ -96,7 +97,7 @@ class TemplateController extends Controller
     //getting list of templates
     public function showTemplates(){
         try{
-            $templates  = Template::all();
+            $templates  = Template::where('submit', 1)->get();
             return response()->json([
                 $templates
             ], 200);
@@ -141,38 +142,68 @@ class TemplateController extends Controller
         }
     }
 
+    public function getTempSteps($id)
+    {
+        try{
+            $steps = TemplateStep::where('template_id', $id)->orderBy('step_order')->get();
+            $step_details = array();
+            foreach ($steps as $step){
+                $tasks = TemplateTask::where('step_id', $step->id)->get();
+                $task_details= array();
+                foreach ($tasks as $task){
+                    $task_details[] = $task;
+                }
+                $step_info = $step;
+                $step_info['task_details'] = $task_details;
+                $step_details[] = $step_info;
+            }
+            //dd('dsg');
+            return response()->json([
+                $step_details
+            ], 200);
+        }catch (\Exception $e)
+        {
+            return $this->responseFail();
+        }
+    }
+
     //delete template's step
     public function destroyTempStep($id){
-        $step=TemplateStep::find($id);
-        $step_order = $step->step_order;
-        $template_id = $step->template_id;
-        $tasks = Task::where('step_id', $id)->get();
-        foreach ($tasks as $task){
-            $this->destroyTempTask($task->id);
-        }
-        $step->delete();
+        try{
+            $step=TemplateStep::find($id);
+            $step_order = $step->step_order;
+            $template_id = $step->template_id;
+            $tasks = TemplateTask::where('step_id', $id)->get();
+            foreach ($tasks as $task){
+                $this->destroyTempTask($task->id);
+            }
+            $step->delete();
 
-        //reset step order
-        $current_step_order = $step_order;
-        $all_steps = TemplateStep::where('template_id', $template_id)->get();
-        $next_step_orders = array();
-        foreach ($all_steps as $step){
-            //dd($current_step_order);
-            if($step->step_order >= $current_step_order){
-                $next_step_orders[] = $step->step_order;
+            //reset step order
+            $current_step_order = $step_order;
+            $all_steps = TemplateStep::where('template_id', $template_id)->get();
+            $next_step_orders = array();
+            foreach ($all_steps as $step){
+                //dd($current_step_order);
+                if($step->step_order >= $current_step_order){
+                    $next_step_orders[] = $step->step_order;
+                }
             }
-        }
-        if(count($next_step_orders)>0){
-            $steps_next = TemplateStep::whereIn('step_order', $next_step_orders)->where('template_id', $template_id)->get();
-            foreach ($steps_next as $snext){
-                $snext->step_order -=1;
-                $snext->save();
+            if(count($next_step_orders)>0){
+                $steps_next = TemplateStep::whereIn('step_order', $next_step_orders)->where('template_id', $template_id)->get();
+                foreach ($steps_next as $snext){
+                    $snext->step_order -=1;
+                    $snext->save();
+                }
             }
+            $msg="deleted";
+            return response()->json([
+                $msg
+            ], 200);
+        }catch (\Exception $e)
+        {
+        return $this->responseFail();
         }
-        $msg="deleted";
-        return response()->json([
-            $msg
-        ], 200);
 
     }
 
@@ -220,8 +251,8 @@ class TemplateController extends Controller
     public function destroyTempTask($id){
         try{
             $task  = TemplateTask::find($id);
-
-            $task->delete();
+            if($task != NULL)
+                $task->delete();
             return response()->json([
                 'deleted'
             ], 200);
@@ -265,4 +296,18 @@ class TemplateController extends Controller
             return $this->responseFail();
         }
     }
+
+    public function SubmitTemplate($id){
+        try{
+            $template = Template::find($id);
+            $template->submit = 1;
+            $template->save();
+            return response()->json([
+                'submitted'
+            ], 200);
+        } catch (\Exception $e) {
+            return $this->responseFail();
+        }
+    }
+
 }

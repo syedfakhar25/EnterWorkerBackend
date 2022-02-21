@@ -17,6 +17,7 @@ class CreateTemplatesTable extends Migration
             $table->id();
             $table->string('name')->nullable();
             $table->string('description')->nullable();
+            $table->boolean('submit')->nullable();
             $table->timestamps();
         });
     }
