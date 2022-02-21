@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\ProjectTemplate;
 use App\Models\Step;
 use App\Models\Task;
 use App\Models\Template;
@@ -263,10 +264,39 @@ class TemplateController extends Controller
     }
 
     //populating template in a project
-    public function addTemplateinProject(Request $request, $temp_id){
+    public function addTemplateinProject(Request $request, $project_id){
         try{
-            $project_id = $request->project_id;
-            $steps = TemplateStep::where('template_id', $temp_id)->get();
+            $project_id = $project_id;
+            $templates = $request->temp_id;
+            foreach($templates as $key=>$value){
+                $steps = TemplateStep::where('template_id', $value)->get();
+                $step_ids = array();
+                foreach ($steps as $step){
+                    $step_ids[] = $step->id;
+                }
+                //add template steps in project steps
+                foreach ($steps as $step_temp){
+                    $step = new Step();
+                    $step->step_order = $step_temp->step_order;
+                    $step->project_id = $project_id;
+                    $step->save();
+                    $tasks = TemplateTask::where('step_id', $step_temp->id)->get();
+                    foreach ($tasks as $task_temp){
+                        $task = new Task();
+                        $task->title = $task_temp->title;
+                        $task->step_id = $step->id;
+                        $task->project_id = $project_id;
+                        $task->save();
+                    }
+                }
+                //add template tasks in project tasks
+
+                $project_template = new ProjectTemplate();
+                $project_template->project_id = $project_id;
+                $project_template->template_id = $value;
+                $project_template->save();
+            }
+            /*$steps = TemplateStep::where('template_id', $temp_id)->get();
             $step_ids = array();
             foreach ($steps as $step){
                 $step_ids[] = $step->id;
@@ -288,11 +318,32 @@ class TemplateController extends Controller
                 $task->project_id = $project_id;
                 $task->save();
             }
+            */
+
+
+
             return response()->json([
                 'template added in project'
             ], 200);
         }catch (\Exception $e)
         {
+            return $this->responseFail();
+        }
+    }
+
+    //template of a project
+    public function getTemplateofProject($id){
+        try{
+            $p_templates = ProjectTemplate::where('project_id', $id)->get();
+            $temp_ids = array();
+            foreach ($p_templates as $temp){
+                $temp_ids[]=$temp->template_id;
+            }
+            $templates = Template::whereIn('id', $temp_ids)->get();
+            return response()->json([
+                $templates
+            ], 200);
+        } catch (\Exception $e) {
             return $this->responseFail();
         }
     }

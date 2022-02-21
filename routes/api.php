@@ -134,6 +134,7 @@ Route::group(['prefix'=>'admin'],function(){
 
     //adding a template in project
     Route::post('add-template-in-project/{id}', [\App\Http\Controllers\API\TemplateController::class, 'addTemplateinProject']);
+    Route::get('project_templates/{id}', [\App\Http\Controllers\API\TemplateController::class, 'getTemplateofProject']);
     });
 
 
