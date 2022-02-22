@@ -16,6 +16,7 @@ class CreateTemplateStepsTable extends Migration
         Schema::create('template_steps', function (Blueprint $table) {
             $table->id();
             $table->bigInteger('template_id');
+            $table->bigInteger('percentage');
             $table->bigInteger('step_order');
             $table->timestamps();
         });

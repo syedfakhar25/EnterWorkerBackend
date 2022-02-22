@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\Project;
 use App\Models\ProjectTemplate;
 use App\Models\Step;
 use App\Models\Task;
@@ -132,8 +133,23 @@ class TemplateController extends Controller
             ///////////////////////////
             $step= new TemplateStep();
             $step->step_order = $request->step_order;
+            $step->percentage = $request->percentage;
             $step->template_id = $request->template_id;
             $step->save();
+            return response()->json([
+                $step
+            ], 200);
+        }catch (\Exception $e)
+        {
+            return $this->responseFail();
+        }
+    }
+
+    public function editTempStep(Request $request, $id){
+        try{
+                $step = TemplateStep::find($id);
+                $step->percentage = $request->percentage;
+                $step->save();
             return response()->json([
                 $step
             ], 200);
@@ -267,24 +283,26 @@ class TemplateController extends Controller
     public function addTemplateinProject(Request $request, $project_id){
         try{
             $project_id = $project_id;
+            $project = Project::find($project_id);
             $templates = $request->temp_id;
+            $step_order =0;
             foreach($templates as $key=>$value){
                 $steps = TemplateStep::where('template_id', $value)->get();
-                $step_ids = array();
-                foreach ($steps as $step){
-                    $step_ids[] = $step->id;
-                }
                 //add template steps in project steps
                 foreach ($steps as $step_temp){
+                    $step_order+=1;
                     $step = new Step();
-                    $step->step_order = $step_temp->step_order;
+                    $step->step_order = $step_order;
+                    $step->percentage = $step_temp->percentage;
                     $step->project_id = $project_id;
                     $step->save();
                     $tasks = TemplateTask::where('step_id', $step_temp->id)->get();
+
                     foreach ($tasks as $task_temp){
                         $task = new Task();
                         $task->title = $task_temp->title;
                         $task->step_id = $step->id;
+                        $task->deadline = $project->start_date;
                         $task->project_id = $project_id;
                         $task->save();
                     }

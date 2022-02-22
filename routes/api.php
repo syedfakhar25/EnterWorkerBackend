@@ -123,6 +123,7 @@ Route::group(['prefix'=>'admin'],function(){
     Route::delete('/delete-template/{id}', [\App\Http\Controllers\API\TemplateController::class, 'destroyTemplate']);
 
     Route::post('/add-temp-step', [\App\Http\Controllers\API\TemplateController::class, 'addTempStep']);
+    Route::put('/edit-temp-step/{id}', [\App\Http\Controllers\API\TemplateController::class, 'editTempStep']);
     Route::get('/get-temp-step/{id}', [\App\Http\Controllers\API\TemplateController::class, 'getTempSteps']);
     Route::delete('/delete-temp-step/{id}', [\App\Http\Controllers\API\TemplateController::class, 'destroyTempStep']);
 
@@ -135,6 +136,7 @@ Route::group(['prefix'=>'admin'],function(){
     //adding a template in project
     Route::post('add-template-in-project/{id}', [\App\Http\Controllers\API\TemplateController::class, 'addTemplateinProject']);
     Route::get('project_templates/{id}', [\App\Http\Controllers\API\TemplateController::class, 'getTemplateofProject']);
+   // Route::delete('remove_temp_project/{id}', [\App\Http\Controllers\API\TemplateController::class, 'deleteTemplateofProject']);
     });
 
 

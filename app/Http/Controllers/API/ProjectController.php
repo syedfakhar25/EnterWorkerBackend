@@ -925,6 +925,7 @@ class ProjectController extends Controller
                 $prj->status = 2;
                 $prj->update();
             }
+            $this->ProjectPercentage($prj->id);
         }
 
 
@@ -1036,7 +1037,7 @@ class ProjectController extends Controller
                 $employee_ids[]=$task->employee_id;
             }
             $employees=User::whereNotIn('id', $employee_ids)->where('user_type',3)
-                            ->where('by_company' ,'=', NULL);
+                            ->where('by_company',0)->get();
             /*$employees=DB::table('users')
                 ->orWhere(function($query) {
                     $query->where('by_company','null')
@@ -1718,18 +1719,24 @@ class ProjectController extends Controller
     public function CheckPercentage(Request $request, $id){
         try{
             $steps = Step::where('project_id', $id)->get();
-            $current_step = Step::find($request->id);
-            $current_step_percentage = $current_step->percentage;
+            $current_step_percentage =0;
+            $step_id = $request->step_id;
+            if(!empty($step_id)){
+                $current_step = Step::find($step_id);
+                $current_step_percentage = $current_step->percentage;
+            }
             $percentage = 0;
             if(count($steps)>0){
                 foreach ($steps as $step){
-                    $percentage+= $step->percentage;
+                    if($step->percentage!=NULL)
+                        $percentage+= $step->percentage;
                 }
             }
-            if($current_step_percentage > 0){
+            if($current_step_percentage  > 0){
                 $percentage = $percentage - $current_step_percentage;
+            }else{
+                $percentage =$percentage;
             }
-
             return $this->responseSuccess(
                 $percentage
             );
