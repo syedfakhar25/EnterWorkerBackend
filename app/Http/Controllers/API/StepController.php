@@ -156,24 +156,6 @@ class StepController extends Controller
                     $next_step = 'no next step exists';
                 }
             }
-           /* if(count($next_step)>0){
-                if($next_step[0]->active == 0 || $next_step[0]->active == NULL){
-                    if($next_step[0]->task_status == 0 || $next_step[0]->task_status == 1) {
-                        $next_step[0]->active = 0;
-                        $next_step[0]->update();
-                    }
-                    elseif($next_step[0]->task_status == 1){
-                        $next_step[0]->active = 1;
-                        $next_step[0]->update();
-                    }
-                  //  dd($next_step[0]);
-                }
-                elseif($next_step[0]->active == 1){
-                    $next_step[0]->active = 0;
-                    $next_step[0]->update();
-                   // dd($next_step[0]);
-                }
-            }*/
 
             return response()->json([
                 $next_step,

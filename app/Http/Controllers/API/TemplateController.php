@@ -47,6 +47,37 @@ class TemplateController extends Controller
         }
     }
 
+    public function percentageTemplate(Request $request, $id){
+        try{
+            $steps = TemplateStep::where('template_id', $id)->get();
+            $current_step_percentage =0;
+            $step_id = $request->step_id;
+            if(!empty($step_id)){
+                $current_step = TemplateStep::find($step_id);
+                $current_step_percentage = $current_step->percentage;
+            }
+            $percentage = 0;
+            if(count($steps)>0){
+                foreach ($steps as $step){
+                    if($step->percentage!=NULL)
+                        $percentage+= $step->percentage;
+                }
+            }
+            if($current_step_percentage  > 0){
+                $percentage = $percentage - $current_step_percentage;
+            }else{
+                $percentage =$percentage;
+            }
+            return response()->json([
+                $percentage
+            ],
+                200
+            );
+        } catch (\Exception $e) {
+            return $this->responseFail();
+        }
+    }
+
     //show a  specific temaplate
     public function getTemplate($id){
         try{

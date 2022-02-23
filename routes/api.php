@@ -118,6 +118,7 @@ Route::group(['prefix'=>'admin'],function(){
     //routes for templates , steps, tasks
     Route::post('/add-template', [\App\Http\Controllers\API\TemplateController::class, 'addTemplate']);
     Route::put('/edit-template/{id}', [\App\Http\Controllers\API\TemplateController::class, 'updateTemplate']);
+    Route::put('/check-percentage-template/{id}', [\App\Http\Controllers\API\TemplateController::class, 'percentageTemplate']);
     Route::put('/submit-template/{id}', [\App\Http\Controllers\API\TemplateController::class, 'submitTemplate']);
     Route::get('/get-template/{id}', [\App\Http\Controllers\API\TemplateController::class, 'getTemplate']);
     Route::delete('/delete-template/{id}', [\App\Http\Controllers\API\TemplateController::class, 'destroyTemplate']);

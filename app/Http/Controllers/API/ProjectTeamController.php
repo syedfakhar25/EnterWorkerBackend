@@ -65,37 +65,40 @@ class ProjectTeamController extends Controller
         try{
             //dd($project_id);
             $team_members = ProjectTeam::where('project_id', $project_id)->get();
-            $manager_id = ProjectManager::select('manager_id')->where('project_id', $project_id)->get();
-            //dd($manager_id);
-            if(count($manager_id)>0){
-                $manager = User::find($manager_id);
-                $m_id = $manager[0]->id;
-                $manager_name_designation =DB::select(DB::raw("select  users.id as manager_id, users.first_name,users.last_name, users.img, designations.designation_name from users
+            if(count($team_members)>0){
+                $manager_id = ProjectManager::select('manager_id')->where('project_id', $project_id)->get();
+                //dd($manager_id);
+                if(count($manager_id)>0){
+                    $manager = User::find($manager_id);
+                    $m_id = $manager[0]->id;
+                    $manager_name_designation =DB::select(DB::raw("select  users.id as manager_id, users.first_name,users.last_name, users.img, designations.designation_name from users
                           join designations on designations.id = users.designation_id where users.id = $m_id"));
-                $manager_name_designation[0]->img=asset('user_images/' .$manager_name_designation[0]->img);
-            }
-            else{
-                $manager_name_designation = NULL;
-            }
-
-
-            $employees= array();
-            foreach ($team_members as $team){
-                $employees[]= $team->employee_id;
-            }
-          //  dd($employees);
-            $employees_id= array();
-            $employees_id[0] = implode(',', $employees);
-            $emp_name_designations =DB::select(DB::raw("select  users.id, users.first_name, users.last_name, users.img, designations.designation_name from users
+                    $manager_name_designation[0]->img=asset('user_images/' .$manager_name_designation[0]->img);
+                }
+                else{
+                    $manager_name_designation = NULL;
+                }
+                $employees= array();
+                foreach ($team_members as $team){
+                    $employees[]= $team->employee_id;
+                }
+                //  dd($employees);
+                $employees_id= array();
+                $employees_id[0] = implode(',', $employees);
+                $emp_name_designations =DB::select(DB::raw("select  users.id, users.first_name, users.last_name, users.img, designations.designation_name from users
                       join designations on designations.id = users.designation_id where users.id IN ($employees_id[0])"));
-            $team_with_manager = array(
-                'team' => $emp_name_designations,
-                 'manger' => $manager_name_designation
-            );
+                $team_with_manager = array(
+                    'team' => $emp_name_designations,
+                    'manger' => $manager_name_designation
+                );
 
-            foreach ($emp_name_designations as $end){
-                $end->img=asset('user_images/' . $end->img);
+                foreach ($emp_name_designations as $end){
+                    $end->img=asset('user_images/' . $end->img);
+                }
+            }else{
+                $team_with_manager=[];
             }
+
             return response()->json([
                 $team_with_manager
             ], 200);
