@@ -77,18 +77,22 @@ Route::group(['prefix'=>'admin'],function(){
     //add project documents
     Route::post('upload-project-offer/{id}', [ProjectController::class, 'uploadProjectOffer']);
     Route::get('get-project-offer/{id}', [ProjectController::class, 'getProjectOffer']);
+    Route::put('remove-project-offer/{id}', [ProjectController::class, 'removeProjectOffer']);
     Route::get('get-project-offer-client/{id}', [ProjectController::class, 'getProjectOfferClient']);
 
     Route::post('upload-project-drawing/{id}', [ProjectController::class, 'uploadProjectDrawing']);
     Route::get('get-project-drawing/{id}', [ProjectController::class, 'getProjectDrawing']);
+    Route::put('remove-project-drawing/{id}', [ProjectController::class, 'removeProjectDrawing']);
     Route::get('get-project-drawing-client/{id}', [ProjectController::class, 'getProjectDrawingClient']);
 
     Route::post('upload-project-offer-price/{id}', [ProjectController::class, 'uploadProjectOfferPrice']);
     Route::get('get-project-offer-price/{id}', [ProjectController::class, 'getProjectOfferPrice']);
+    Route::put('remove-project-offer-price/{id}', [ProjectController::class, 'removeProjectOfferPrice']);
     Route::get('get-project-offer-price-client/{id}', [ProjectController::class, 'getProjectOfferPriceClient']);
 
     Route::post('upload-project-contract/{id}', [ProjectController::class, 'uploadProjectContract']);
     Route::get('get-project-contract/{id}', [ProjectController::class, 'getProjectContract']);
+    Route::put('remove-project-contract/{id}', [ProjectController::class, 'removeProjectContract']);
     Route::get('get-project-contract-client/{id}', [ProjectController::class, 'getProjectContractClient']);
 
 
@@ -147,6 +151,9 @@ Route::group(['prefix'=>'manager'],function(){
     Route::get('/get-manager-projects/{manager_id}', [ProjectController::class,'getManagerProjects'])->name('manager.get.project');
     Route::get('completed-projects/{manager_id}', [ProjectController::class,'managerCompletedProjects'])->name('manager.completed.projects');
     Route::get('ongoing-projects/{manager_id}', [ProjectController::class,'managerOngoingProjects'])->name('manager.ongoing.projects');
+
+    //tasks assigned to manager
+    Route::get('manager-tasks/{manager_id}', [TaskController::class,'managerTotalTasks'])->name('manager.total.tasks');
 
     //routes related to adding tasks, steps and manager in a Project
     Route::resource('tasks', TaskController::class);

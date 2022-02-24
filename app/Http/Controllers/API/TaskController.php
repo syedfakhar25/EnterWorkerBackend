@@ -268,6 +268,49 @@ public function updateTaskStatus(ChangeTaskStatusRequest $request){
 
         }
   }
+
+  //get manager's total tasks
+    public function managerTotalTasks($manager_id){
+
+        try {
+            $total_tasks=Task::where('manager_id',$manager_id)->get();
+            $projects = DB::select(DB::raw("select projects.*, concat (users.first_name,' ',users.last_name) as customer_name  from  tasks left join projects  on
+                        (tasks.project_id = projects.id) left join users on (projects.customer_id = users.id)
+                         WHERE tasks.manager_id = $manager_id  and projects.submit = 1 GROUP BY projects.id"));
+           $projects_status = Project::select('projects.id', 'projects.status')
+                                ->join('tasks', 'tasks.project_id', '=', 'projects.id')
+                                ->where('tasks.manager_id', $manager_id)
+                                ->get();
+          // dd($projects_status);
+            //checking status of projects (completed, in-progress) on basis of its tasks)
+            foreach($projects_status as $prj){
+                $tasks = Task::where('project_id', $prj->id)
+                    ->whereIn('task_status', [0,1])
+                    ->get();
+
+                if(count($tasks)>0){
+                    $prj->status = 1;
+                    $prj->update();
+                }
+                else{
+                    $prj->status = 2;
+                    $prj->update();
+                }
+            }
+            $tasks_projects = array(
+                'tasks' => $total_tasks,
+                'projects' => $projects,
+                'project_status' => $projects_status
+            );
+
+            return response()->json([
+                $tasks_projects
+            ], 200);
+
+        } catch (\Exception $e) {
+
+        }
+  }
   public function employeeCompletedTasks($employee_id){
 
         try {

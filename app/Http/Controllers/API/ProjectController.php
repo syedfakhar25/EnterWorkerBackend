@@ -619,6 +619,56 @@ class ProjectController extends Controller
             $project_offer
         ], 200);
     }
+    public function removeProjectOffer(Request $request, $id){
+        $project = Project::find($id);
+        $project_offer = public_path('/project_files/').$project->project_offer;
+        if (File::exists($project_offer)) {
+            File::delete($project_offer);
+        }
+        $project->project_offer = NULL;
+        $project->save();
+        return response()->json([
+            'removed'
+        ], 200);
+    }
+    public function removeProjectOfferPrice(Request $request, $id){
+        $project = Project::find($id);
+        $offer_with_price = public_path('/project_files/').$project->offer_with_price;
+        if (File::exists($offer_with_price)) {
+            File::delete($offer_with_price);
+        }
+        $project->offer_with_price = NULL;
+        $project->save();
+        return response()->json([
+            'removed'
+        ], 200);
+    }
+
+    public function removeProjectDrawing(Request $request, $id){
+        $project = Project::find($id);
+        $drawing = public_path('/project_files/').$project->project_drawing;
+        if (File::exists($drawing)) {
+            File::delete($drawing);
+        }
+        $project->project_drawing = NULL;
+        $project->save();
+        return response()->json([
+            'removed'
+        ], 200);
+    }
+
+    public function removeProjectContract(Request $request, $id){
+        $project = Project::find($id);
+        $contract = public_path('/project_files/').$project->contract;
+        if (File::exists($contract)) {
+            File::delete($contract);
+        }
+        $project->contract = NULL;
+        $project->save();
+        return response()->json([
+            'removed'
+        ], 200);
+    }
 
     //get project files
     public function getProjectOfferPrice(Request $request, $id){
@@ -785,6 +835,22 @@ class ProjectController extends Controller
             }
 
             $project->delete();
+            $offer = public_path('/project_files/').$project->project_offer;
+            $offer_price = public_path('/project_files/').$project->offer_with_price;
+            $drawing = public_path('/project_files/').$project->project_drawing;
+            $contract = public_path('/project_files/').$project->contract;
+            if (File::exists($offer_price)) {
+                File::delete($offer_price);
+            }
+            if (File::exists($offer)) {
+                File::delete($offer);
+            }
+            if (File::exists($drawing)) {
+                File::delete($drawing);
+            }
+            if (File::exists($contract)) {
+                File::delete($contract);
+            }
             return response()->json([
                 "deleted"
             ], 200);
@@ -1394,7 +1460,7 @@ class ProjectController extends Controller
             foreach($projectManagers as $pc){
                 $ids[] = $pc->project_id;
             }
-            $projects=Project::with('customer','tasks','pinnedproject')->whereIn('id',$ids)->get();
+            $projects=Project::with('customer','tasks','pinnedproject')->whereIn('id',$ids)->where('submit', 1)->get();
             $pin_status=0;
 
             //checking status of projects (completed, in-progress) on basis of its tasks)
@@ -1459,7 +1525,7 @@ class ProjectController extends Controller
                 $ids[] = $pc->project_id;
             }
 
-            $projects=Project::with('customer','tasks','pinnedproject')->whereIn('id',$ids)->get();
+            $projects=Project::with('customer','tasks','pinnedproject')->whereIn('id',$ids)->where('submit', 1)->get();
             //dd($projects);
             $pin_status=0;
 
