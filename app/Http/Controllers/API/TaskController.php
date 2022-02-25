@@ -75,6 +75,7 @@ class TaskController extends Controller
             $task->employee_id=$request->employee_id;
             $task->manager_id=$request->manager_id;
             $task->company_id=$request->company_id;
+            $task->customer_id=$request->customer_id;
             $task->title=$request->title;
             $task->task_status=$request->task_status;
             $task->is_important=$request->is_important;
@@ -151,6 +152,7 @@ class TaskController extends Controller
             $task->employee_id=$request->employee_id;
             $task->manager_id=$request->manager_id;
             $task->company_id=$request->company_id;
+            $task->customer_id=$request->customer_id;
             $task->title=$request->title;
             $task->task_status=$request->task_status;
             $task->is_important=$request->is_important;

@@ -20,6 +20,7 @@ class CreateTasksTable extends Migration
             $table->bigInteger('employee_id');
             $table->bigInteger('manager_id');
             $table->bigInteger('company_id');
+            $table->bigInteger('customer_id');
             $table->string('title')->nullable();
            // $table->double('percentage');
             $table->date('deadline')->nullable();

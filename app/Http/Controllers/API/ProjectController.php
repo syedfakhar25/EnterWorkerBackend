@@ -321,7 +321,8 @@ class ProjectController extends Controller
                 }
                 //dd($managers);
                 $managers_id[0] = implode(',', $managers);
-                $emp_name_designations = \Illuminate\Support\Facades\DB::select(DB::raw("select  users.id, users.first_name, users.last_name, users.img, users.manager_type, designations.designation_name from users
+                $emp_name_designations = \Illuminate\Support\Facades\DB::select(DB::raw("select  users.id, users.first_name, users.last_name, users.img, users.manager_type, users.user_type,
+                        designations.designation_name from users
                       join designations on designations.id = users.designation_id where users.id IN ($managers_id[0])"));
                 foreach ($emp_name_designations as $end){
                     $end->img=asset('user_images/' . $end->img);
@@ -820,6 +821,9 @@ class ProjectController extends Controller
         {
             //getting all steps in the project
             $steps = Step::where('project_id', $project->id)->get();
+            $teams= ProjectTeam::where('project_id', $project->id)->get();
+            $managers = ProjectManager::where('project_id', $project->id)->get();
+            $company_workers = PorjectCompanyWorker::where('project_id', $project->id)->get();
             $steps_ids = array();
             foreach($steps as $step){
                 $steps_ids[]= $step->id;
@@ -832,6 +836,15 @@ class ProjectController extends Controller
             }
             foreach($steps as $step){
                 $step->delete();
+            }
+            foreach ($teams as $team){
+                $team->delete();
+            }
+            foreach ($managers as $manager){
+                $manager->delete();
+            }
+            foreach ($company_workers as $cw){
+                $cw->delete();
             }
 
             $project->delete();
@@ -1145,6 +1158,7 @@ class ProjectController extends Controller
     public function allUsersForProject($project_id){
         try
         {
+            $project = Project::find($project_id);
             // team of project
             $team_members = ProjectTeam::where('project_id', $project_id)->get();
             if(count($team_members)>0){
@@ -1154,8 +1168,10 @@ class ProjectController extends Controller
                 }
                 $employees_id= array();
                 $employees_id[0] = implode(',', $employees);
-                $emp =DB::select(DB::raw("select  users.id, users.first_name, users.last_name, users.img, designations.designation_name from users
-                      join designations on designations.id = users.designation_id where users.id IN ($employees_id[0])"));
+                $emp =DB::select(DB::raw("select  users.id, users.first_name, users.last_name, users.img, users.user_type,
+                                designations.designation_name from users join designations on
+                                designations.id = users.designation_id
+                                where users.id IN ($employees_id[0])"));
             }else{
                 $emp = '';
             }
@@ -1179,11 +1195,16 @@ class ProjectController extends Controller
                 $company = '';
             }
 
-
+            //project's customer
+            $customer_id = $project->customer_id;
+            $customer =DB::select(DB::raw("select  users.id, users.first_name, users.last_name, users.img, users.user_type,
+                    designations.designation_name from users
+                      join designations on designations.id = users.designation_id where users.id=$customer_id"));
             $all_users = [
                 'employees' => $emp,
                 'managers' => $managers,
-                'company' => $company
+                'company' => $company,
+                'customer' => $customer
             ];
             return $this->responseSuccess($all_users);
         }catch (\Exception $e)
