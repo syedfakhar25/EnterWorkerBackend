@@ -202,6 +202,7 @@ Route::group(['prefix'=>'employee'],function(){
 Route::group(['prefix'=>'customer'],function(){
     Route::get('dashboard/{customer_id}', [DashboardController::class,'customerDashboard'])->name('customer.dashboard');
     Route::get('total-projects/{customer_id}', [ProjectController::class,'customerTotalProjects'])->name('customer.total.projects');
+    Route::get('latest-project/{customer_id}', [ProjectController::class,'customerLatestProject']);
     Route::get('completed-projects/{customer_id}', [ProjectController::class,'customerCompletedProjects'])->name('customer.completed.projects');
     Route::get('ongoing-projects/{customer_id}', [ProjectController::class,'customerOngoingProjects'])->name('customer.ongoing.projects');
     Route::get('events/{customer_id}', [CalendereventController::class,'customerEvents'])->name('customer.events');

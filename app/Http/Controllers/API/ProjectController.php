@@ -512,7 +512,7 @@ class ProjectController extends Controller
     //get project offer for client
     public function getProjectOfferPriceClient(Request $request, $id){
         try{
-            $name = Project::where('customer_id', $id)->get();
+            $name = Project::where('customer_id', $id)->orderBy('created_at', 'desc')->get();
             //  dd($name);
             $name = $name[0]->offer_with_price;
             $offer_with_price  =asset('project_files/' .$name);
@@ -529,7 +529,7 @@ class ProjectController extends Controller
     //get project offer for client
     public function getProjectContractClient(Request $request, $id){
         try{
-            $name = Project::where('customer_id', $id)->get();
+            $name = Project::where('customer_id', $id)->orderBy('created_at', 'desc')->get();
             //  dd($name);
             $name = $name[0]->contract;
             $contract  =asset('project_files/' .$name);
@@ -600,7 +600,7 @@ class ProjectController extends Controller
 
     //get project files
     public function getProjectDrawingClient(Request $request, $id){
-        $name = Project::where('customer_id', $id)->get();
+        $name = Project::where('customer_id', $id)->orderBy('created_at', 'desc')->get();
         $name = $name[0]->project_drawing;
         $project_drawing  =asset('project_files/' .$name);
         //dd($project_drawing);
@@ -1266,14 +1266,62 @@ class ProjectController extends Controller
             return $this->responseFail();
         }
     }
+    public function customerLatestProject($customer_id){
+        try {
+            $files_path = asset('project_files/');
+            $project=Project::with('customer','tasks','pinnedproject')->where('customer_id',$customer_id)->orderBy('created_at', 'desc')->first();
+
+            //getting documents with their paths
+            if(!empty($project->project_offer)){
+                $project->project_offer=$files_path.'/'.$project->project_offer;
+            }
+            if(!empty($project->project_drawing)){
+                $project->project_drawing=$files_path.'/'.$project->project_drawing;
+            }
+            if(!empty($project->offer_with_price)){
+                $project->offer_with_price=$files_path.'/'.$project->offer_with_price;
+            }
+            if(!empty($project->contract)){
+                $project->contract=$files_path.'/'.$project->contract;
+            }
+
+            // getting employees from project team of project
+            $team_ids= array();
+            $project_team = ProjectTeam::where('project_id', $project->id)->get();
+            foreach ($project_team as $pt){
+                $team_ids[] = $pt->employee_id;
+            }
+            $team = User::whereIn('id', $team_ids)->get();
+            $img_path=asset('user_images/');
+            foreach ($team as $tm){
+                $tm->img =$img_path.'/'.$tm->img;
+            }
+
+            //getting managers from project managers of project
+            $manager_ids =array();
+            $project_managers = ProjectManager::where('project_id', $project->id)->get();
+            foreach ($project_managers as $pm){
+                $manager_ids[] = $pm->manager_id;
+            }
+            $manager = User::whereIn('id', $manager_ids)->get();
+            foreach ($manager as $m){
+                $m->img =$img_path.'/'.$m->img;
+            }
+
+            return response()->json([
+                $project,
+                'team' => $team,
+                'manager' => $manager
+            ], 200);
+
+        } catch (\Exception $e) {
+            return $this->responseFail();
+        }
+    }
     public function customerTotalProjects($customer_id){
         try {
-
-            /*   $projects_managers = DB::table('projects')
-                   ->leftJoin('users', 'users.id', '=', 'projects.manager_id')
-                   ->get();*/
-            //  dd($customer_id);
-            $projects=Project::with('customer','tasks','pinnedproject')->where('customer_id',$customer_id)->get();
+            $files_path = asset('project_files/');
+            $projects=Project::with('customer','tasks','pinnedproject', 'projectTeam')->where('customer_id',$customer_id)->get();
             $managers = array();
             foreach ($projects as $project){
                 $project_managers = ProjectManager::where('project_id', $project->id)->get();
@@ -1281,7 +1329,24 @@ class ProjectController extends Controller
                     if($pm!=NULL)
                         $managers[]= $pm->manager_id;
                 }
+                $team = array();
+                $project_team = ProjectTeam::where('project_id', $project->id)->get();
+                foreach ($project_team as $pt){
+                   $team[] = User::where('id', $pt->employee_id)->get();
+                }
 
+                if(!empty($project->project_offer)){
+                    $project->project_offer=$files_path.'/'.$project->project_offer;
+                }
+                if(!empty($project->project_drawing)){
+                    $project->project_drawing=$files_path.'/'.$project->project_drawing;
+                }
+                if(!empty($project->offer_with_price)){
+                    $project->offer_with_price=$files_path.'/'.$project->offer_with_price;
+                }
+                if(!empty($project->contract)){
+                    $project->contract=$files_path.'/'.$project->contract;
+                }
             }
             //dd($managers);
             $managers = User::whereIn('id', $managers)->get();
@@ -1292,13 +1357,6 @@ class ProjectController extends Controller
             $managers = [
                 'managers' => $managers
             ];
-
-            /*$manager_name_designations = \Illuminate\Support\Facades\DB::select(DB::raw("select  users.id, users.first_name, users.last_name, users.img, designations.designation_name from users
-                        join designations on designations.id = users.designation_id where users.id IN ($manager_id[0])"));
-            foreach ($manager_name_designations as $end){
-                $end->img=asset('user_images/' . $end->img);
-            }
-            $manager_info = $manager_name_designations;*/
             foreach($projects as $prj){
                 $tasks = Task::where('project_id', $prj->id)->get();
                 if(count($tasks)>0){
@@ -1324,7 +1382,7 @@ class ProjectController extends Controller
                         $value1->employee->img=$img_path.'/'.$value1->employee->img;
                     }
                     if (in_array($value1->employee, $employee)) {
-
+                        $employee[] = $value1->employee;
                     }else{
                         $employee[] = $value1->employee;
                     }
@@ -1365,7 +1423,8 @@ class ProjectController extends Controller
             //  dd($projects);
             return response()->json([
                 $projects,
-                $managers
+                $managers,
+                $team
                 // $manager_info
             ], 200);
 

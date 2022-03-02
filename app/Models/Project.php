@@ -50,4 +50,5 @@ class Project extends Model
     public function extraWork(){
         return $this->hasMany(ExtraWork::class,'project_id');
     }
+
 }
